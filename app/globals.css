@@ -1,0 +1,247 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variable Fonts for Performance */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300..900&display=swap');
+
+:root {
+  --font-inter: 'Inter', system-ui, sans-serif;
+
+  /* Pantone 2025 Colors */
+  --color-mocha: #A47764;
+  --color-pink: #E85D75;
+  --color-purple: #7B68EE;
+
+  /* Dark Theme */
+  --color-bg: #0A0A0B;
+  --color-surface: #1A1A1D;
+  --color-elevated: #252528;
+  --color-border: #2D2D30;
+
+  /* Text */
+  --color-text-primary: #E8E8E8;
+  --color-text-secondary: #A8A8AA;
+  --color-text-tertiary: #6E6E70;
+
+  /* Accents */
+  --color-fire: #E85D75;
+  --color-gold: #FFD700;
+  --color-cyan: #00F5FF;
+
+  /* Spacing */
+  --safe-area-inset-top: env(safe-area-inset-top);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+  overscroll-behavior-y: none;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-mocha);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-pink);
+  color: white;
+}
+
+/* Focus Visible */
+*:focus-visible {
+  outline: 2px solid var(--color-pink);
+  outline-offset: 2px;
+}
+
+/* Disable outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  button {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  input,
+  textarea {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Effect (2025 Trend) */
+  .glass {
+    background: rgba(26, 26, 29, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(164, 119, 100, 0.1);
+  }
+
+  .glass-elevated {
+    background: rgba(37, 37, 40, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(164, 119, 100, 0.15);
+  }
+
+  /* Modern Button Styles */
+  .btn-primary {
+    @apply bg-accent-fire text-white font-semibold px-6 py-3 rounded-2xl;
+    @apply active:scale-95 transition-transform duration-150;
+    @apply shadow-glow hover:shadow-elevated;
+  }
+
+  .btn-secondary {
+    @apply glass text-text-primary font-semibold px-6 py-3 rounded-2xl;
+    @apply active:scale-95 transition-transform duration-150;
+    @apply border border-dark-border hover:border-brand-mocha;
+  }
+
+  .btn-ghost {
+    @apply text-text-secondary font-medium px-4 py-2 rounded-xl;
+    @apply active:scale-95 transition-all duration-150;
+    @apply hover:bg-dark-elevated hover:text-text-primary;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply glass rounded-3xl p-4;
+    @apply shadow-elevated;
+  }
+
+  .card-elevated {
+    @apply glass-elevated rounded-3xl p-6;
+    @apply shadow-elevated;
+  }
+
+  /* Feed Item Animation */
+  .feed-item {
+    @apply animate-fade-in;
+    animation-fill-mode: backwards;
+  }
+
+  /* Skeleton Loading */
+  .skeleton {
+    @apply bg-dark-elevated animate-pulse rounded-2xl;
+  }
+}
+
+@layer utilities {
+  /* Safe Area Utilities */
+  .safe-top {
+    padding-top: var(--safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+
+  /* Smooth Scrolling Container */
+  .scroll-smooth-touch {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Hide Scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Text Gradient */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, var(--color-pink), var(--color-purple));
+  }
+
+  /* Micro-interactions */
+  .tap-highlight {
+    @apply active:bg-dark-elevated transition-colors duration-75;
+  }
+}
+
+/* View Transitions API (2025) */
+@supports (view-transition-name: none) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.3s;
+  }
+}
+
+/* PWA Splash Screen Override */
+@media (display-mode: standalone) {
+  body {
+    user-select: none;
+  }
+}
+
+/* Dark Mode Optimizations for OLED */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
