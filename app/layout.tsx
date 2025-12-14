@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
+import { dark } from '@clerk/themes';
 import './globals.css';
 import Header from '@/components/Header';
 import ClientProviders from '@/components/ClientProviders';
@@ -104,21 +106,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
-      <body className="antialiased bg-dark-bg text-text-primary min-h-screen">
-        <ClientProviders>
-          <div className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
-            <Header />
-            <main className="flex-1 pb-safe-bottom" role="main">
-              {children}
-            </main>
-          </div>
-        </ClientProviders>
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark,
+        variables: {
+          colorPrimary: '#A47764',
+          colorBackground: '#0A0A0B',
+          colorInputBackground: '#1A1A1D',
+          colorInputText: '#F5F5F7',
+        },
+      }}
+    >
+      <html lang="en" className={inter.variable}>
+        <head>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        </head>
+        <body className="antialiased bg-dark-bg text-text-primary min-h-screen">
+          <ClientProviders>
+            <div className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
+              <Header />
+              <main className="flex-1 pb-safe-bottom" role="main">
+                {children}
+              </main>
+            </div>
+          </ClientProviders>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
