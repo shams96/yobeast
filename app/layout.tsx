@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/Header';
+import ClientProviders from '@/components/ClientProviders';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -109,12 +110,14 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="antialiased bg-dark-bg text-text-primary min-h-screen">
-        <div className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
-          <Header />
-          <main className="flex-1 pb-safe-bottom">
-            {children}
-          </main>
-        </div>
+        <ClientProviders>
+          <div className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
+            <Header />
+            <main className="flex-1 pb-safe-bottom" role="main">
+              {children}
+            </main>
+          </div>
+        </ClientProviders>
       </body>
     </html>
   );

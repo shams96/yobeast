@@ -13,25 +13,29 @@ export default function Header() {
   const currentWeekNumber = Math.max(1, weeksSinceLaunch);
 
   return (
-    <header className="sticky top-0 z-50 glass border-b border-dark-border safe-top">
-      <div className="flex items-center justify-between px-4 py-3">
+    <header className="sticky top-0 z-50 glass border-b border-dark-border safe-top" role="banner">
+      <nav className="flex items-center justify-between px-4 py-3" aria-label="Main navigation">
         {/* Logo - Clickable */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2" aria-label="Yollr Beast home">
           <div className="text-2xl font-bold hover:opacity-80 transition-opacity cursor-pointer">
             <span className="text-gradient">Yollr</span>
           </div>
-          <div className="hidden sm:flex items-center gap-1 text-xs font-semibold text-brand-mocha bg-dark-elevated px-2 py-1 rounded-full">
-            <span>🔥</span>
+          <div
+            className="hidden sm:flex items-center gap-1 text-xs font-semibold text-brand-mocha bg-dark-elevated px-2 py-1 rounded-full"
+            aria-label={`Current Beast Week ${currentWeekNumber}`}
+          >
+            <span aria-hidden="true">🔥</span>
             <span>Beast Week {currentWeekNumber}</span>
           </div>
         </Link>
 
         {/* Right Section: Create + Points + Avatar */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" role="toolbar" aria-label="User actions">
           {/* Create Moment Button */}
           <Link href="/moment/new">
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-accent-fire to-brand-pink hover:shadow-glow active:scale-95 transition-all"
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-accent-fire to-brand-pink hover:shadow-glow active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-accent-fire"
               aria-label="Create moment"
             >
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,9 +49,13 @@ export default function Header() {
           </Link>
 
           {/* Points Display */}
-          <div className="flex items-center gap-2 glass-elevated px-3 py-1.5 rounded-full">
+          <div
+            className="flex items-center gap-2 glass-elevated px-3 py-1.5 rounded-full"
+            role="status"
+            aria-label={`${user.points.toLocaleString()} points earned`}
+          >
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-accent-gold to-brand-mocha flex items-center justify-center">
-              <span className="text-xs font-bold">⚡</span>
+              <span className="text-xs font-bold" aria-hidden="true">⚡</span>
             </div>
             <span className="text-sm font-semibold text-text-primary">
               {user.points.toLocaleString()}
@@ -56,8 +64,12 @@ export default function Header() {
 
           {/* Beast Tokens (if any) */}
           {user.beastTokens > 0 && (
-            <div className="hidden sm:flex items-center gap-1.5 glass-elevated px-3 py-1.5 rounded-full">
-              <span className="text-sm">🎟️</span>
+            <div
+              className="hidden sm:flex items-center gap-1.5 glass-elevated px-3 py-1.5 rounded-full"
+              role="status"
+              aria-label={`${user.beastTokens} Beast tokens`}
+            >
+              <span className="text-sm" aria-hidden="true">🎟️</span>
               <span className="text-xs font-semibold text-brand-mocha">
                 {user.beastTokens}
               </span>
@@ -66,13 +78,14 @@ export default function Header() {
 
           {/* User Avatar */}
           <button
-            className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-pink to-brand-purple flex items-center justify-center text-white font-semibold text-sm ring-2 ring-dark-border hover:ring-brand-mocha transition-all active:scale-95"
-            aria-label="User profile"
+            type="button"
+            className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-pink to-brand-purple flex items-center justify-center text-white font-semibold text-sm ring-2 ring-dark-border hover:ring-brand-mocha transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-fire"
+            aria-label={`${user.name} profile menu`}
           >
             {user.name.charAt(0)}
           </button>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }
