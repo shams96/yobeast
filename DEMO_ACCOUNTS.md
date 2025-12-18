@@ -18,7 +18,8 @@ NEXT_PUBLIC_UAT_MODE=true
 
 ### 1. Harvard University
 **Email**: `demo@harvard.edu`
-**Password**: `Harvard2025!`
+**Password**: `HarvardDemo2025!$`
+**Username**: `demo_harvard`
 **Institution**: Harvard University
 **Domain**: `harvard.edu`
 **Year**: Junior
@@ -26,7 +27,8 @@ NEXT_PUBLIC_UAT_MODE=true
 
 ### 2. MIT
 **Email**: `demo@mit.edu`
-**Password**: `MIT2025!`
+**Password**: `MITDemo2025!$`
+**Username**: `demo_mit`
 **Institution**: MIT
 **Domain**: `mit.edu`
 **Year**: Sophomore
@@ -34,7 +36,8 @@ NEXT_PUBLIC_UAT_MODE=true
 
 ### 3. Stanford University
 **Email**: `demo@stanford.edu`
-**Password**: `Stanford2025!`
+**Password**: `StanfordDemo2025!$`
+**Username**: `demo_stanford`
 **Institution**: Stanford University
 **Domain**: `stanford.edu`
 **Year**: Senior
@@ -42,7 +45,8 @@ NEXT_PUBLIC_UAT_MODE=true
 
 ### 4. UC Berkeley
 **Email**: `demo@berkeley.edu`
-**Password**: `Berkeley2025!`
+**Password**: `BerkeleyDemo2025!$`
+**Username**: `demo_berkeley`
 **Institution**: UC Berkeley
 **Domain**: `berkeley.edu`
 **Year**: Freshman
@@ -50,7 +54,8 @@ NEXT_PUBLIC_UAT_MODE=true
 
 ### 5. Yale University
 **Email**: `demo@yale.edu`
-**Password**: `Yale2025!`
+**Password**: `YaleDemo2025!$`
+**Username**: `demo_yale`
 **Institution**: Yale University
 **Domain**: `yale.edu`
 **Year**: Junior
@@ -58,21 +63,35 @@ NEXT_PUBLIC_UAT_MODE=true
 
 ## 🚀 Quick Setup Instructions
 
-### Option 1: Manual Account Creation (Recommended for Demo)
+### CRITICAL: Clerk Dashboard Configuration FIRST
 
-1. **Disable Email Verification in Clerk Dashboard**:
+**You MUST configure Clerk dashboard before creating accounts:**
+
+1. **Disable Phone Authentication** (REQUIRED):
    - Go to [Clerk Dashboard](https://dashboard.clerk.com/)
    - Navigate to **User & Authentication** → **Email, Phone, Username**
+   - Under **Authentication strategies**:
+     - ❌ **Phone number** - DISABLE
+   - Save changes
+
+2. **Disable Email Verification** (For Demo Only):
+   - Same page: **Email, Phone, Username**
    - Under **Email address**: Uncheck "Verify at sign-up" ✅→❌
    - This allows instant account creation without verification
+   - Save changes
 
-2. **Create Accounts**:
-   - For each university above:
-     - Go to `/institution-select`
+### Option 1: Manual Account Creation (Recommended for Demo)
+
+**After Clerk configuration above:**
+
+1. **Create Accounts**:
+   - For each university:
+     - Go to `http://localhost:3000/institution-select`
      - Select the university
      - Click "Continue to Sign Up"
      - Enter the email (e.g., `demo@harvard.edu`)
-     - Enter the password (e.g., `Harvard2025!`)
+     - Enter username (e.g., `demo_harvard`)
+     - Enter the password (e.g., `HarvardDemo2025!$`)
      - Complete sign-up (no verification needed)
      - Select year in onboarding
      - Done!
@@ -190,13 +209,15 @@ After demo:
 
 ## 📊 Account Summary
 
-| University | Email | Password | Year | Status |
-|------------|-------|----------|------|--------|
-| Harvard | demo@harvard.edu | Harvard2025! | Junior | Ready |
-| MIT | demo@mit.edu | MIT2025! | Sophomore | Ready |
-| Stanford | demo@stanford.edu | Stanford2025! | Senior | Ready |
-| UC Berkeley | demo@berkeley.edu | Berkeley2025! | Freshman | Ready |
-| Yale | demo@yale.edu | Yale2025! | Junior | Ready |
+| University | Email | Username | Password | Year | Status |
+|------------|-------|----------|----------|------|--------|
+| Harvard | demo@harvard.edu | demo_harvard | HarvardDemo2025!$ | Junior | Configure Clerk First |
+| MIT | demo@mit.edu | demo_mit | MITDemo2025!$ | Sophomore | Configure Clerk First |
+| Stanford | demo@stanford.edu | demo_stanford | StanfordDemo2025!$ | Senior | Configure Clerk First |
+| UC Berkeley | demo@berkeley.edu | demo_berkeley | BerkeleyDemo2025!$ | Freshman | Configure Clerk First |
+| Yale | demo@yale.edu | demo_yale | YaleDemo2025!$ | Junior | Configure Clerk First |
+
+**⚠️ IMPORTANT**: You must disable phone authentication in Clerk Dashboard before creating these accounts!
 
 ---
 
