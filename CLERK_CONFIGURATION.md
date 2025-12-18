@@ -26,17 +26,38 @@ Configure Clerk to ONLY allow .edu email sign-ups (disable Google, phone, and ot
    - ❌ Discord
    - ❌ Any other OAuth providers
 
-### Step 3: Email Verification Settings
+### Step 3: Email Verification Settings (Use Links, NOT Codes)
 
 1. Navigate to **User & Authentication** → **Email, Phone, Username**
 2. Under **Email address**:
    - ✅ **Require email** - ENABLE
    - ✅ **Verify at sign-up** - ENABLE
 3. Under **Verification methods**:
-   - ✅ **Email verification code** - ENABLE
-   - ❌ **Email link** - Optional (can use both)
+   - ❌ **Email verification code** - DISABLE (no OTP codes needed)
+   - ✅ **Email link** - ENABLE (cleaner UX, one-click verification)
 
-### Step 4: Restrict Email Domains (Optional but Recommended)
+**Why email links over OTP codes?**
+- ✅ Better UX: Click link vs typing 6-digit code
+- ✅ Faster: One click verification
+- ✅ Less friction: No copying/pasting codes
+- ✅ Modern: Same as BeReal, GAS, and other campus apps
+- ✅ Mobile-friendly: Opens directly in app
+
+### Step 4: Disable Multi-Factor Authentication (MFA/2FA)
+
+1. Navigate to **User & Authentication** → **Multi-factor**
+2. **Disable ALL MFA methods**:
+   - ❌ **SMS code** - DISABLE
+   - ❌ **Authenticator app (TOTP)** - DISABLE
+   - ❌ **Backup codes** - DISABLE
+
+**Why disable MFA for campus app?**
+- Users are verified by .edu email (sufficient security)
+- No unnecessary OTP codes or 2FA prompts
+- Simpler sign-in flow for students
+- Email verification is the primary security layer
+
+### Step 5: Restrict Email Domains (Optional but Recommended)
 
 Clerk Pro/Enterprise feature - restrict to .edu domains only:
 
