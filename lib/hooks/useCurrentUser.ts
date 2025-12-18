@@ -37,6 +37,7 @@ export function useCurrentUser() {
             username: clerkUser.username || `user_${clerkUser.id.slice(0, 8)}`,
             avatar: clerkUser.imageUrl,
             campus: 'Not Set',
+            campusDomain: undefined, // Will be set during onboarding
             year: 'Not Set',
             points: 0,
             beastTokens: 0,

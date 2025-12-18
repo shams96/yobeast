@@ -90,6 +90,7 @@ function OnboardingContent() {
       // Prepare user data
       const userData: any = {
         campus: campus,
+        campusDomain: institutionDomain,
         year: year,
         inviteCode: userInviteCode,
         inviteSlots: 4,
@@ -113,6 +114,7 @@ function OnboardingContent() {
         await user.update({
           unsafeMetadata: {
             campus: campus,
+            campusDomain: institutionDomain,
             year: year,
             inviteCode: userInviteCode,
             onboardingComplete: true,

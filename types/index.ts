@@ -19,6 +19,7 @@ export interface User {
   avatar?: string;
   avatarUrl?: string; // Keep for backward compatibility
   campus: string;
+  campusDomain?: string; // Institution domain for data fencing (e.g., 'stanford.edu')
   year?: 'Freshman' | 'Sophomore' | 'Junior' | 'Senior' | 'Grad Student' | 'Not Set';
   points: number;
   beastTokens: number;
@@ -78,6 +79,7 @@ export interface BeastClip {
   id: string;
   userId: string;
   beastWeekId: string;
+  campusDomain: string; // Institution domain for data fencing
   videoUrl: string;
   thumbnailUrl?: string;
   caption: string;
@@ -105,6 +107,7 @@ export interface BeastVote {
 export interface Moment {
   id: string;
   userId: string;
+  campusDomain: string; // Institution domain for data fencing
   imageUrl?: string;
   videoUrl?: string;
   caption: string;
