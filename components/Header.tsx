@@ -20,6 +20,15 @@ export default function Header() {
           <div className="text-2xl font-bold hover:opacity-80 transition-opacity cursor-pointer">
             <span className="text-ash">Yollr</span>
           </div>
+          {user && user.campus && user.campus !== 'Not Set' && (
+            <div
+              className="hidden md:flex items-center gap-1 text-xs font-semibold text-steel bg-carbon px-2.5 py-1 rounded-full border border-steel/20"
+              aria-label={`Campus: ${user.campus}`}
+            >
+              <span aria-hidden="true">🎓</span>
+              <span>{user.campus}</span>
+            </div>
+          )}
           <div
             className="hidden sm:flex items-center gap-1 text-xs font-semibold text-digital-grape bg-carbon px-2.5 py-1 rounded-full border border-digital-grape/30"
             aria-label={`Current Beast Week ${currentWeekNumber}`}

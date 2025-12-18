@@ -78,6 +78,7 @@ export const MOCK_MOMENTS: Moment[] = [
   {
     id: 'moment_demo_001',
     userId: 'demo_user_001',
+    campusDomain: 'demo.edu',
     caption: 'Getting ready for Week 1 Beast Challenge!',
     isBeastMoment: true,
     beastWeekId: 'beast_week_001',
