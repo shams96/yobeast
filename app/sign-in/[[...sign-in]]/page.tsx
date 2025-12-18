@@ -4,6 +4,20 @@ export default function SignInPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-nightfall flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        <style jsx global>{`
+          /* Aggressively hide all OAuth/social buttons */
+          .cl-socialButtonsBlockButton,
+          .cl-socialButtonsBlockButton__google,
+          [data-provider="google"],
+          button[data-provider],
+          .cl-socialButtons,
+          .cl-dividerRow {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+          }
+        `}</style>
         <SignIn
           appearance={{
             variables: {
@@ -21,9 +35,10 @@ export default function SignInPage() {
               card: 'bg-carbon border-steel/20 shadow-elevated',
               headerTitle: 'text-ash',
               headerSubtitle: 'text-steel',
-              socialButtonsBlockButton: 'hidden !important', // Hide Google login
-              socialButtonsBlockButtonText: 'hidden',
-              dividerRow: 'hidden', // Hide "or" divider
+              socialButtonsBlockButton: 'display: none !important',
+              socialButtonsBlockButtonText: 'display: none !important',
+              socialButtonsIconButton: 'display: none !important',
+              dividerRow: 'display: none !important',
               formButtonPrimary: 'bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall hover:opacity-90 font-semibold',
               formFieldInput: 'bg-nightfall border-steel/20 text-ash focus:border-digital-grape',
               formFieldLabel: 'text-ash',
