@@ -35,8 +35,8 @@ export default function SignInPage() {
             },
           }}
           signUpUrl="/sign-up"
-          redirectUrl="/feed"
-          afterSignInUrl="/feed"
+          redirectUrl="/"
+          afterSignInUrl="/"
         />
       </div>
     </div>
