@@ -39,14 +39,15 @@ export function FeedbackWidget() {
       {/* Floating Feedback Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 right-4 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-accent-fire to-brand-pink shadow-glow hover:scale-110 active:scale-95 transition-transform flex items-center justify-center"
-        aria-label="Send feedback"
+        className="fixed bottom-20 right-4 z-50 w-16 h-16 rounded-full bg-gradient-to-r from-electric-coral to-signal-lime shadow-elevated hover:shadow-[0_0_25px_rgba(255,111,97,0.6)] hover:scale-110 active:scale-95 transition-all flex items-center justify-center border-2 border-white/20 animate-pulse-slow"
+        aria-label="Send Beta Feedback"
         aria-expanded={isOpen}
+        title="Send Beta Feedback"
       >
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+        <svg className="w-7 h-7 text-nightfall" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
         </svg>
-        <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent-gold rounded-full text-xs font-bold text-dark-bg flex items-center justify-center">
+        <span className="absolute -top-2 -right-2 w-7 h-7 bg-digital-grape rounded-full text-xs font-bold text-white flex items-center justify-center shadow-lg border-2 border-nightfall">
           β
         </span>
       </button>
@@ -54,7 +55,7 @@ export function FeedbackWidget() {
       {/* Feedback Modal */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-dark-bg/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-nightfall/80 backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
           role="dialog"
           aria-modal="true"
@@ -67,13 +68,13 @@ export function FeedbackWidget() {
             {!submitted ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 id="feedback-title" className="text-xl font-bold text-text-primary">
+                  <h3 id="feedback-title" className="text-xl font-bold text-ash">
                     Beta Feedback
                   </h3>
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
-                    className="text-text-tertiary hover:text-text-primary"
+                    className="text-steel/70 hover:text-ash"
                     aria-label="Close feedback form"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,13 +83,13 @@ export function FeedbackWidget() {
                   </button>
                 </div>
 
-                <p className="text-sm text-text-secondary">
+                <p className="text-sm text-steel">
                   Help us improve Yollr Beast! Your feedback shapes the future of campus challenges.
                 </p>
 
                 {/* Rating */}
                 <div>
-                  <label className="block text-sm font-semibold text-text-primary mb-2">
+                  <label className="block text-sm font-semibold text-ash mb-2">
                     How's your experience?
                   </label>
                   <div className="flex gap-2" role="radiogroup" aria-label="Rating">
@@ -110,7 +111,7 @@ export function FeedbackWidget() {
 
                 {/* Type */}
                 <div>
-                  <label className="block text-sm font-semibold text-text-primary mb-2">
+                  <label className="block text-sm font-semibold text-ash mb-2">
                     What's this about?
                   </label>
                   <div className="flex gap-2">
@@ -126,7 +127,7 @@ export function FeedbackWidget() {
                         className={`flex-1 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
                           type === option.value
                             ? `bg-gradient-to-r ${option.color} text-white`
-                            : 'glass hover:bg-dark-elevated'
+                            : 'bg-carbon/50 hover:bg-carbon border border-steel/20'
                         }`}
                         aria-pressed={type === option.value}
                       >
@@ -138,7 +139,7 @@ export function FeedbackWidget() {
 
                 {/* Message */}
                 <div>
-                  <label htmlFor="feedback-message" className="block text-sm font-semibold text-text-primary mb-2">
+                  <label htmlFor="feedback-message" className="block text-sm font-semibold text-ash mb-2">
                     Tell us more
                   </label>
                   <textarea
@@ -146,7 +147,7 @@ export function FeedbackWidget() {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="What would you like us to know?"
-                    className="w-full px-4 py-3 bg-dark-surface border border-dark-border rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-brand-mocha resize-none"
+                    className="w-full px-4 py-3 bg-carbon border border-steel/20 rounded-lg text-ash placeholder-steel/70 focus:outline-none focus:ring-2 focus:ring-digital-grape resize-none"
                     rows={4}
                     required
                     aria-required="true"
@@ -166,10 +167,10 @@ export function FeedbackWidget() {
             ) : (
               <div className="text-center py-8 space-y-4">
                 <div className="text-6xl">✅</div>
-                <h3 className="text-xl font-bold text-text-primary">
+                <h3 className="text-xl font-bold text-ash">
                   Thanks for your feedback!
                 </h3>
-                <p className="text-text-secondary">
+                <p className="text-steel">
                   Your input helps us build the best campus app ever.
                 </p>
               </div>

@@ -7,9 +7,42 @@ import Link from 'next/link';
 
 export default function BeastReelPage() {
   const beastWeek = MOCK_BEAST_WEEK;
-  const winnerClip = MOCK_FINALISTS[0];
-  const finalistClips = MOCK_FINALISTS.slice(1);
   const beastMoments = MOCK_MOMENTS.filter(m => m.isBeastMoment);
+  const hasFinalists = MOCK_FINALISTS.length > 0;
+  const winnerClip = hasFinalists ? MOCK_FINALISTS[0] : null;
+  const finalistClips = hasFinalists ? MOCK_FINALISTS.slice(1) : [];
+
+  // Show empty state if no content yet
+  if (!hasFinalists && beastMoments.length === 0) {
+    return (
+      <div className="min-h-screen bg-nightfall flex flex-col items-center justify-center p-6">
+        <Link
+          href="/"
+          className="absolute top-6 left-6 w-10 h-10 rounded-full bg-carbon border-2 border-steel/30 flex items-center justify-center text-ash hover:bg-carbon/80 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
+
+        <div className="max-w-md text-center space-y-6">
+          <div className="text-6xl mb-4">🎥</div>
+          <h1 className="text-2xl font-bold text-ash">
+            Beast Reel Coming Soon!
+          </h1>
+          <p className="text-steel leading-relaxed">
+            The Beast Reel will be available after the finale event. Check back soon to relive the best moments!
+          </p>
+          <Link
+            href="/"
+            className="inline-block bg-digital-grape text-white font-semibold px-8 py-3 rounded-xl hover:bg-digital-grape/90 transition-colors"
+          >
+            Back to Feed
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-20">
@@ -64,46 +97,43 @@ export default function BeastReelPage() {
 
       {/* Content */}
       <div className="space-y-6 pt-6">
-        {/* Winner Section */}
-        <div className="px-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🏆</span>
-            <h3 className="text-lg font-bold text-text-primary">
-              Beast of the Week
-            </h3>
-          </div>
-
-          <div className="card-elevated">
-            <div className="aspect-[9/16] rounded-2xl overflow-hidden mb-4">
-              <img
-                src={winnerClip.thumbnailUrl}
-                alt={winnerClip.caption}
-                className="w-full h-full object-cover"
-              />
+        {/* Winner Section - Only show if we have a winner */}
+        {winnerClip && (
+          <div className="px-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🏆</span>
+              <h3 className="text-lg font-bold text-ash">
+                Beast of the Week
+              </h3>
             </div>
 
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent-gold to-accent-fire flex items-center justify-center text-white font-bold">
-                {winnerClip.user?.name.charAt(0)}
+            <div className="bg-carbon rounded-2xl p-4 border border-steel/20">
+              <div className="aspect-[9/16] rounded-xl overflow-hidden mb-4 bg-nightfall flex items-center justify-center">
+                <div className="text-6xl">🎬</div>
               </div>
-              <div className="flex-1">
-                <p className="text-base font-semibold text-text-primary">
-                  {winnerClip.user?.name}
-                </p>
-                <p className="text-sm text-text-tertiary">
-                  {winnerClip.user?.year}
-                </p>
-              </div>
-              <div className="bg-accent-gold/20 px-3 py-1.5 rounded-full">
-                <span className="text-sm font-semibold text-accent-gold">
-                  Winner
-                </span>
-              </div>
-            </div>
 
-            <p className="text-sm text-text-secondary mb-4">
-              {winnerClip.caption}
-            </p>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-electric-coral to-signal-lime flex items-center justify-center text-nightfall font-bold">
+                  {winnerClip.user?.name?.charAt(0) || 'W'}
+                </div>
+                <div className="flex-1">
+                  <p className="text-base font-semibold text-ash">
+                    {winnerClip.user?.name || 'Winner'}
+                  </p>
+                  <p className="text-sm text-steel">
+                    {winnerClip.user?.year || 'Student'}
+                  </p>
+                </div>
+                <div className="bg-signal-lime/20 px-3 py-1.5 rounded-full border border-signal-lime/30">
+                  <span className="text-sm font-semibold text-signal-lime">
+                    Winner
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-sm text-steel mb-4">
+                {winnerClip.caption}
+              </p>
 
             <div className="flex items-center gap-4 text-sm text-text-tertiary">
               <span className="flex items-center gap-1.5">
@@ -117,18 +147,20 @@ export default function BeastReelPage() {
             </div>
           </div>
         </div>
+        )}
 
-        {/* Finalists Section */}
-        <div className="px-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🔥</span>
-            <h3 className="text-lg font-bold text-text-primary">
-              Top Finalists
-            </h3>
-          </div>
+        {/* Finalists Section - Only show if we have finalists */}
+        {finalistClips.length > 0 && (
+          <div className="px-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🔥</span>
+              <h3 className="text-lg font-bold text-ash">
+                Top Finalists
+              </h3>
+            </div>
 
-          <div className="space-y-3">
-            {finalistClips.map((clip, index) => (
+            <div className="space-y-3">
+              {finalistClips.map((clip, index) => (
               <div key={clip.id} className="card">
                 <div className="flex gap-4">
                   {/* Thumbnail */}
@@ -172,13 +204,14 @@ export default function BeastReelPage() {
             ))}
           </div>
         </div>
+        )}
 
         {/* Beast Moments Section */}
         {beastMoments.length > 0 && (
           <div className="px-4 space-y-3">
             <div className="flex items-center gap-2">
               <span className="text-2xl">✨</span>
-              <h3 className="text-lg font-bold text-text-primary">
+              <h3 className="text-lg font-bold text-ash">
                 Beast Moments
               </h3>
             </div>
@@ -187,13 +220,17 @@ export default function BeastReelPage() {
               {beastMoments.map((moment) => (
                 <div
                   key={moment.id}
-                  className="aspect-square rounded-xl overflow-hidden bg-dark-surface"
+                  className="aspect-square rounded-xl overflow-hidden bg-nightfall flex items-center justify-center border border-steel/20"
                 >
-                  <img
-                    src={moment.imageUrl}
-                    alt={moment.caption}
-                    className="w-full h-full object-cover"
-                  />
+                  {moment.imageUrl ? (
+                    <img
+                      src={moment.imageUrl}
+                      alt={moment.caption}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-4xl">📸</div>
+                  )}
                 </div>
               ))}
             </div>

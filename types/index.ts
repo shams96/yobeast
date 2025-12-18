@@ -16,12 +16,40 @@ export interface User {
   id: string;
   name: string;
   username: string;
-  avatarUrl: string;
+  avatar?: string;
+  avatarUrl?: string; // Keep for backward compatibility
   campus: string;
-  year?: 'Freshman' | 'Sophomore' | 'Junior' | 'Senior';
+  year?: 'Freshman' | 'Sophomore' | 'Junior' | 'Senior' | 'Grad Student' | 'Not Set';
   points: number;
   beastTokens: number;
   createdAt: Date;
+
+  // Invite system
+  inviteCode: string;           // User's personal invite code (e.g., ABC123)
+  invitedBy?: string;           // ID of user who invited them
+  inviteSlots: number;          // How many invites they have left
+  totalInvites: number;         // Total successful invites
+  inviteRank?: number;          // Leaderboard position
+
+  // Engagement tracking (for invite unlocking)
+  engagementScore: number;      // 0-100, calculated from actions
+  canInvite: boolean;           // Whether they've unlocked invites
+  lastActive?: Date;            // Last time they opened app
+  sessionsCount: number;        // Total sessions
+
+  // Engagement actions
+  votedInBeastWeek: boolean;    // Has voted in current week
+  postedMoment: boolean;        // Has posted at least one moment
+  reactedToContent: boolean;    // Has reacted to content
+
+  // Retention tracking
+  day1Return: boolean;          // Came back next day
+  day7Return: boolean;          // Came back after 7 days
+
+  // Location/verification
+  zipCode?: string;             // For geo-based campus
+  verificationLevel: number;    // 1=phone, 2=location, 3=.edu email
+  isVerified: boolean;          // At least level 2
 }
 
 export interface BeastWeek {
@@ -164,6 +192,33 @@ export const MOCK_CURRENT_USER: User = {
   points: 1250,
   beastTokens: 15,
   createdAt: new Date('2024-09-01'),
+
+  // Invite system
+  inviteCode: 'ALEXC1',
+  invitedBy: undefined,
+  inviteSlots: 4,
+  totalInvites: 0,
+  inviteRank: undefined,
+
+  // Engagement tracking
+  engagementScore: 45,
+  canInvite: false,
+  lastActive: new Date(),
+  sessionsCount: 8,
+
+  // Engagement actions
+  votedInBeastWeek: true,
+  postedMoment: false,
+  reactedToContent: true,
+
+  // Retention tracking
+  day1Return: true,
+  day7Return: false,
+
+  // Location/verification
+  zipCode: undefined,
+  verificationLevel: 1,
+  isVerified: false,
 };
 
 export const MOCK_BEAST_WEEK: BeastWeek = {

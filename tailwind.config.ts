@@ -9,27 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Pantone 2025 + Gen Z Dark Theme
+        // Pantone 2025 Solid Colors (NO GRADIENTS)
+        // Base Colors
+        'nightfall': '#0B0D10',      // Primary background
+        'carbon': '#141821',          // Card backgrounds
+        'ash': '#EDEFF3',             // Primary text
+        'steel': '#9AA3B2',           // Secondary text/borders
+
+        // Brand & Accent Colors
+        'future-dusk': '#4B4E6D',     // Primary CTA
+        'digital-grape': '#6A5ACD',   // Beast brand color
+        'electric-coral': '#FF6F61',  // Urgency/submissions
+        'signal-lime': '#9AE66E',     // Success states
+        'ice-cyan': '#6EC1E4',        // Info/highlights
+
+        // Legacy support (will be phased out)
         brand: {
-          mocha: '#A47764', // Pantone Mocha Mousse 2025
-          pink: '#E85D75', // Vibrant accent
-          purple: '#7B68EE', // Secondary accent
-        },
-        dark: {
-          bg: '#0A0A0B', // True black for OLED
-          surface: '#1A1A1D', // Card backgrounds
-          elevated: '#252528', // Elevated surfaces
-          border: '#2D2D30', // Subtle borders
-        },
-        text: {
-          primary: '#E8E8E8', // High contrast
-          secondary: '#A8A8AA', // Muted text
-          tertiary: '#6E6E70', // Disabled text
-        },
-        accent: {
-          fire: '#E85D75', // Primary CTA
-          gold: '#FFD700', // Achievements
-          cyan: '#00F5FF', // Highlights
+          mocha: '#6A5ACD', // Remapped to Digital Grape
         },
       },
       fontFamily: {
@@ -81,13 +77,10 @@ const config: Config = {
           '100%': { transform: 'translateY(100vh) rotate(360deg)', opacity: '0' },
         },
       },
-      backdropBlur: {
-        xs: '2px',
-      },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-        'glow': '0 0 20px rgba(232, 93, 117, 0.5)',
-        'elevated': '0 10px 40px rgba(0, 0, 0, 0.6)',
+        'card': '0 2px 8px rgba(11, 13, 16, 0.3)',
+        'elevated': '0 4px 16px rgba(11, 13, 16, 0.4)',
+        'button': '0 2px 4px rgba(11, 13, 16, 0.2)',
       },
     },
   },

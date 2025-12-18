@@ -33,17 +33,17 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {/* User Avatar */}
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-pink to-brand-purple flex items-center justify-center text-white font-semibold text-sm">
+            {/* User Avatar - Solid color */}
+            <div className="w-10 h-10 rounded-full bg-digital-grape flex items-center justify-center text-ash font-semibold text-sm border-2 border-digital-grape/30">
               {moment.user?.name.charAt(0) || 'A'}
             </div>
 
             {/* User Info */}
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-text-primary">
+              <span className="text-sm font-semibold text-ash">
                 {moment.user?.name || 'Anonymous'}
               </span>
-              <span className="text-xs text-text-tertiary">
+              <span className="text-xs text-steel">
                 {getTimeAgo(moment.createdAt)}
               </span>
             </div>
@@ -51,9 +51,9 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
 
           {/* Beast Moment Badge */}
           {moment.isBeastMoment && (
-            <div className="flex items-center gap-1 bg-accent-fire/10 px-2.5 py-1 rounded-full">
+            <div className="flex items-center gap-1 bg-electric-coral/15 px-2.5 py-1 rounded-full border border-electric-coral/30">
               <span className="text-xs">🔥</span>
-              <span className="text-xs font-semibold text-accent-fire">
+              <span className="text-xs font-semibold text-electric-coral">
                 Beast Week
               </span>
             </div>
@@ -61,7 +61,7 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
         </div>
 
         {/* Media */}
-        <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-dark-surface">
+        <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden bg-carbon">
           {!imageLoaded && (
             <div className="absolute inset-0 skeleton" />
           )}
@@ -91,21 +91,23 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
             />
           )}
 
-          {/* Reaction Button Overlay */}
+          {/* Reaction Button Overlay - Solid background */}
           <div className="absolute bottom-3 right-3 flex flex-col gap-2">
             <button
               onClick={() => handleReact('🔥')}
               disabled={hasReacted}
               className={`
-                w-12 h-12 rounded-full glass-elevated
+                w-12 h-12 rounded-full
+                bg-carbon/90 border-2 border-ash/30
                 flex flex-col items-center justify-center
                 active:scale-90 transition-all duration-150
-                ${hasReacted ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}
+                shadow-elevated
+                ${hasReacted ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:border-future-dusk'}
               `}
             >
               <span className="text-lg">🔥</span>
               {reactionCount > 0 && (
-                <span className="text-[10px] font-bold text-text-primary">
+                <span className="text-[10px] font-bold text-ash">
                   {reactionCount}
                 </span>
               )}
@@ -115,16 +117,16 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
 
         {/* Caption */}
         {moment.caption && (
-          <p className="text-sm text-text-secondary leading-relaxed">
+          <p className="text-sm text-steel leading-relaxed">
             {moment.caption}
           </p>
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between text-xs text-text-tertiary">
+        <div className="flex items-center justify-between text-xs text-steel">
           <span>Expires in {Math.floor((new Date(moment.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60))}h</span>
           {moment.allowInBeastReel && (
-            <span className="text-brand-mocha font-medium">
+            <span className="text-digital-grape font-medium">
               ✨ Beast Reel Eligible
             </span>
           )}

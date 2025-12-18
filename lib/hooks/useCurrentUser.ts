@@ -41,6 +41,18 @@ export function useCurrentUser() {
             points: 0,
             beastTokens: 0,
             inviteCode: generateInviteCode(),
+            inviteSlots: 0,
+            totalInvites: 0,
+            engagementScore: 0,
+            canInvite: false,
+            sessionsCount: 1,
+            votedInBeastWeek: false,
+            postedMoment: false,
+            reactedToContent: false,
+            day1Return: false,
+            day7Return: false,
+            verificationLevel: 1,
+            isVerified: false,
             createdAt: new Date(),
           };
 

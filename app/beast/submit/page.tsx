@@ -172,11 +172,9 @@ export default function BeastSubmitPage() {
   if (step === 'brief') {
     return (
       <div className="min-h-screen pb-20">
-        {/* Hero Section */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-accent-fire via-brand-pink to-brand-purple">
-          <div className="absolute inset-0 backdrop-blur-3xl bg-dark-bg/40" />
-
-          <div className="relative px-6 pt-8 pb-12 space-y-6">
+        {/* Hero Section - Solid Electric Coral */}
+        <div className="relative overflow-hidden bg-electric-coral border-b-2 border-electric-coral/30">
+          <div className="px-6 pt-8 pb-12 space-y-6">
             {/* Back Button */}
             <Link
               href="/"
@@ -204,7 +202,7 @@ export default function BeastSubmitPage() {
         {/* Instructions */}
         <div className="px-6 py-8 space-y-6">
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-text-primary">
+            <h2 className="text-xl font-bold text-ash">
               Quick Tips
             </h2>
 
@@ -216,10 +214,10 @@ export default function BeastSubmitPage() {
               'Have fun and be creative!',
             ].map((tip, index) => (
               <div key={index} className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-fire/20 flex items-center justify-center mt-0.5">
-                  <span className="text-xs text-accent-fire font-bold">{index + 1}</span>
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-electric-coral/20 flex items-center justify-center mt-0.5 border border-electric-coral/30">
+                  <span className="text-xs text-electric-coral font-bold">{index + 1}</span>
                 </div>
-                <p className="text-sm text-text-secondary flex-1">
+                <p className="text-sm text-steel flex-1">
                   {tip}
                 </p>
               </div>
@@ -227,21 +225,21 @@ export default function BeastSubmitPage() {
           </div>
 
           {/* Rules Reminder */}
-          <div className="glass-elevated p-4 rounded-2xl space-y-2">
+          <div className="bg-carbon border border-steel/10 shadow-card p-4 rounded-2xl space-y-2">
             <div className="flex items-center gap-2">
               <span className="text-xl">⚠️</span>
-              <h3 className="text-sm font-semibold text-text-primary">
+              <h3 className="text-sm font-semibold text-ash">
                 Remember the Rules
               </h3>
             </div>
-            <p className="text-xs text-text-tertiary leading-relaxed">
+            <p className="text-xs text-steel leading-relaxed">
               Your submission must follow campus community guidelines. Inappropriate content will be removed.
             </p>
           </div>
         </div>
 
         {/* CTAs */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 glass border-t border-dark-border safe-bottom">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-carbon border-t border-steel/10 safe-bottom">
           <div className="max-w-2xl mx-auto">
             <button
               onClick={() => setStep('camera')}
@@ -263,7 +261,7 @@ export default function BeastSubmitPage() {
         <div className="absolute top-0 left-0 right-0 p-4 safe-top z-10 flex items-center justify-between">
           <button
             onClick={() => setStep('brief')}
-            className="w-10 h-10 rounded-full glass-elevated flex items-center justify-center text-white"
+            className="w-10 h-10 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -271,14 +269,14 @@ export default function BeastSubmitPage() {
           </button>
 
           {isRecording ? (
-            <div className="glass-elevated px-4 py-2 rounded-full flex items-center gap-2">
+            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               <span className="text-sm font-semibold text-white">
                 {recordingTime}s / {maxDuration}s
               </span>
             </div>
           ) : (
-            <div className="glass-elevated px-4 py-2 rounded-full">
+            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full">
               <span className="text-sm font-semibold text-white">
                 🎬 Beast Clip — {maxDuration}s max
               </span>
@@ -287,7 +285,7 @@ export default function BeastSubmitPage() {
 
           <button
             onClick={toggleCamera}
-            className="w-10 h-10 rounded-full glass-elevated flex items-center justify-center text-white"
+            className="w-10 h-10 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
             disabled={isRecording}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -313,14 +311,14 @@ export default function BeastSubmitPage() {
             {!isRecording ? (
               <button
                 onClick={startRecording}
-                className="w-20 h-20 rounded-full bg-accent-fire flex items-center justify-center shadow-glow active:scale-90 transition-transform"
+                className="w-20 h-20 rounded-full bg-electric-coral flex items-center justify-center shadow-elevated active:scale-90 transition-transform border-2 border-electric-coral/30"
               >
                 <div className="w-16 h-16 rounded-full border-4 border-white" />
               </button>
             ) : (
               <button
                 onClick={stopRecording}
-                className="w-20 h-20 rounded-full bg-accent-fire flex items-center justify-center shadow-glow active:scale-90 transition-transform"
+                className="w-20 h-20 rounded-full bg-electric-coral flex items-center justify-center shadow-elevated active:scale-90 transition-transform border-2 border-electric-coral/30"
               >
                 <div className="w-8 h-8 rounded bg-white" />
               </button>
@@ -339,7 +337,7 @@ export default function BeastSubmitPage() {
   return (
     <div className="min-h-screen pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-10 glass border-b border-dark-border safe-top">
+      <div className="sticky top-0 z-10 bg-carbon border-b border-steel/10 safe-top">
         <div className="flex items-center justify-between px-4 py-3">
           <button
             onClick={() => {
@@ -347,12 +345,12 @@ export default function BeastSubmitPage() {
               setVideoFile(null);
               setVideoPreviewUrl('');
             }}
-            className="text-text-secondary hover:text-text-primary transition-colors"
+            className="text-steel hover:text-ash transition-colors"
           >
             <span className="text-sm font-medium">Retake</span>
           </button>
 
-          <h1 className="text-lg font-bold text-text-primary">
+          <h1 className="text-lg font-bold text-ash">
             Review & Submit
           </h1>
 
@@ -362,7 +360,7 @@ export default function BeastSubmitPage() {
 
       {/* Video Preview */}
       <div className="px-6 pt-6 space-y-6">
-        <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden bg-dark-surface">
+        <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden bg-carbon">
           {videoPreviewUrl && (
             <video
               src={videoPreviewUrl}
@@ -378,7 +376,7 @@ export default function BeastSubmitPage() {
 
         {/* Caption Input */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-text-primary">
+          <label className="text-sm font-semibold text-ash">
             Add a caption (optional)
           </label>
           <textarea
@@ -387,28 +385,28 @@ export default function BeastSubmitPage() {
             placeholder="Tell your campus what this is about..."
             className="
               w-full px-4 py-3 rounded-xl
-              bg-dark-surface text-text-primary
-              border border-dark-border focus:border-brand-mocha
-              placeholder:text-text-tertiary
+              bg-carbon text-ash
+              border border-steel/20 focus:border-electric-coral
+              placeholder:text-steel
               resize-none h-24
               transition-colors outline-none
             "
             maxLength={150}
           />
           <div className="flex justify-end">
-            <span className="text-xs text-text-tertiary">
+            <span className="text-xs text-steel">
               {caption.length}/150
             </span>
           </div>
         </div>
 
         {/* Username Toggle */}
-        <div className="flex items-center justify-between p-4 glass-elevated rounded-xl">
+        <div className="flex items-center justify-between p-4 bg-carbon border border-steel/10 shadow-card rounded-xl">
           <div className="flex-1">
-            <p className="text-sm font-semibold text-text-primary">
+            <p className="text-sm font-semibold text-ash">
               Show username on winners list
             </p>
-            <p className="text-xs text-text-tertiary mt-1">
+            <p className="text-xs text-steel mt-1">
               Your clip will still be visible, but your name will be hidden
             </p>
           </div>
@@ -416,7 +414,7 @@ export default function BeastSubmitPage() {
             onClick={() => setShowUsername(!showUsername)}
             className={`
               relative w-12 h-7 rounded-full transition-colors
-              ${showUsername ? 'bg-accent-fire' : 'bg-dark-border'}
+              ${showUsername ? 'bg-electric-coral' : 'bg-steel/30'}
             `}
           >
             <div
@@ -436,17 +434,17 @@ export default function BeastSubmitPage() {
               type="checkbox"
               checked={agreedToRules}
               onChange={(e) => setAgreedToRules(e.target.checked)}
-              className="mt-1 w-5 h-5 rounded border-2 border-dark-border checked:bg-accent-fire checked:border-accent-fire cursor-pointer"
+              className="mt-1 w-5 h-5 rounded border-2 border-steel/30 checked:bg-electric-coral checked:border-electric-coral cursor-pointer"
             />
             <div className="flex-1">
-              <p className="text-sm text-text-primary">
+              <p className="text-sm text-ash">
                 I understand this will be visible to my campus only and must follow community guidelines.
               </p>
             </div>
           </label>
 
-          <div className="glass-elevated p-3 rounded-xl">
-            <p className="text-xs text-text-tertiary leading-relaxed">
+          <div className="bg-carbon border border-steel/10 shadow-card p-3 rounded-xl">
+            <p className="text-xs text-steel leading-relaxed">
               By submitting, you agree to the Beast Challenge rules and campus content policy.
             </p>
           </div>
@@ -454,7 +452,7 @@ export default function BeastSubmitPage() {
       </div>
 
       {/* Bottom CTAs */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 glass border-t border-dark-border safe-bottom">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-carbon border-t border-steel/10 safe-bottom">
         <div className="max-w-2xl mx-auto space-y-3">
           <button
             onClick={handleSubmit}

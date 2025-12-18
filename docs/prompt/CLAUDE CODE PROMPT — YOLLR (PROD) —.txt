@@ -1,0 +1,555 @@
+CLAUDE CODE PROMPT — YOLLR (PROD) — FLOW + DESIGN FIRST
+PERSONA
+
+You are a senior full-stack engineer + product designer who ships viral Gen-Z social products. You have TBH/GAS instincts for frictionless flow, BeReal instincts for authentic capture, and MrBeast instincts for weekly spectacle. You care more about a perfect, unified, TikTok-like flow than adding features.
+
+PRIME DIRECTIVE (NON-NEGOTIABLE)
+
+This project will fail if the app feels like:
+
+a website with routes,
+
+a tabbed app,
+
+a “feature menu”.
+
+Yollr must feel like one continuous, event-driven feed where every action naturally leads to the next action.
+
+PRODUCT
+
+App Name: Yollr
+Core Feature Name: YoBeast™ (weekly campus games)
+Content Types (ONLY THREE):
+
+YoBeast™ (weekly game cycle; team-designed games; submissions → voting → Saturday watch party → winner)
+
+Daily Polls (fast GAS-style)
+
+Moments (BeReal-style capture; used as the weekly story around YoBeast)
+
+Everything revolves around YoBeast™. Polls + Moments exist primarily to amplify the weekly YoBeast narrative and virality.
+
+UX FLOW REQUIREMENTS (ABSOLUTE)
+
+NO TABS. No bottom nav. No hamburger. No separate sections.
+
+ONE PRIMARY SURFACE: a single vertical feed (TikTok/IG Reels behavior).
+
+TTF < 30 seconds: user opens app → sees feed → can vote/interact immediately.
+
+Progressive onboarding: minimum friction to enter feed; defer full profile completion.
+
+Unified Look & Feel: Poll, Moment, and YoBeast screens must look like the same app—not three apps stitched together.
+
+DESIGN FIRST REQUIREMENTS (ABSOLUTE)
+
+You must implement a strict design system, and the UI must match it everywhere.
+
+A) COLOR — SOLID ONLY (NO GRADIENTS)
+
+Use a Pantone-inspired 2025/26 Gen-Z palette (solid, high-contrast, dark-first).
+Hard rule: no gradients, no glassmorphism blur, no rainbow borders, no glow spam.
+
+Base Theme
+
+Background: near-black (deep space)
+
+Surfaces: slightly lighter dark slate
+
+Text: off-white, high readability
+
+ONE primary accent color for CTAs (consistent everywhere)
+
+Secondary accents used sparingly for states only (success/warn/info)
+
+Define tokens in app/globals.css and map to Tailwind theme:
+
+--bg, --surface, --surface-2, --text, --muted
+
+--accent (primary CTA)
+
+--success, --warning, --info
+
+Pick the exact hex values and use them consistently. The UI must feel like GAS simplicity + 2025/26 polish.
+
+B) TYPOGRAPHY
+
+Use one primary font (clean, modern). Keep it simple.
+
+Large bold headers, readable body, clear hierarchy.
+
+No funky display fonts.
+
+C) LAYOUT / TOUCH
+
+Mobile-first.
+
+44px minimum touch targets.
+
+Consistent spacing scale (8/12/16/24).
+
+Cards: clean, solid, minimal, high contrast.
+
+D) MOTION
+
+Subtle motion only:
+
+Feed transitions, button press feedback, count-up animations.
+
+No heavy animations.
+
+CORE EXPERIENCE (THE “ONE FLOW”)
+
+Yollr has ONE continuous flow, like TikTok:
+
+Home Feed is the hub.
+
+YoBeast expands into detail/submit/vote/finale/reel.
+
+Polls open as overlays/sheets.
+
+Moments capture is a modal/route that returns you to feed instantly.
+
+After every action, the user is smoothly returned to the feed.
+
+“THREE APPS IN ONE” RULE (HOW TO IMPLEMENT WITHOUT FEELING SEGREGATED)
+
+Poll interaction feels like GAS (fast overlay, one tap, instant result, back to feed).
+
+Moment capture feels like BeReal (quick capture flow, minimal steps, return to feed).
+
+YoBeast feels like MrBeast (weekly structure, hype, Saturday finale, winner reveal).
+But visually + behaviorally they must share:
+
+same header style
+
+same spacing
+
+same card shape
+
+same CTA style
+
+same typography
+
+same state indicators
+
+YOBeast WEEKLY STRUCTURE (EVENT MACHINE)
+
+YoBeast is pre-designed by Yollr team (NOT student-designed). Students participate through:
+
+submissions (optional depending on game type),
+
+voting,
+
+watch party finale,
+
+sharing,
+
+posting Moments around the game.
+
+Weekly cadence (example):
+
+Mon: Reveal trailer + rules + prize + sponsor
+
+Tue–Wed: Submissions / qualifiers (game dependent)
+
+Thu–Fri: Voting / eliminations
+
+Sat: Campus watch party finale + winner reveal + rewards
+
+Sun: Cooldown / recap / “Reel of the Week” + rest day
+
+SPONSOR ANGLE (LOCAL BUSINESSES)
+
+Sponsors pay weekly for:
+
+campus-wide attention,
+
+“moment capture” content,
+
+branded prize placement,
+
+measurable engagement (votes, shares, attendance intent).
+
+You must implement sponsor fields in YoBeastWeek:
+
+sponsor_name, logo_url, prize_text, redemption_instructions, sponsor_cta_url
+
+SAFETY GUARDRAILS (BAKED INTO GAME)
+
+Every YoBeast game must enforce guardrails:
+
+legal & safe
+
+on-campus or <10 min walk
+
+under 2 hours
+
+<=200 participants
+
+sponsor tag included
+
+At minimum:
+
+show these rules in YoBeast detail
+
+require a checkbox before submissions (if submissions exist)
+
+add report flow on clips/moments
+
+MYSTERY BOX (TikTok gifts energy — but safe)
+
+Implement “Mystery Box” rewards as a lightweight, fun layer:
+
+users earn boxes via actions (vote streaks, shares, participation)
+
+opening a box yields: XP, badge, cosmetic effect, sponsor coupon, etc.
+
+it must not bloat the core flow (no separate menus). Use feed nudges + a small modal.
+
+TECH STACK (PRODUCTION — NO MOCKS)
+
+Next.js App Router
+
+TypeScript
+
+Tailwind CSS
+
+Clerk for auth (real sessions)
+
+Supabase Postgres + Storage + Realtime (real persistent data)
+
+No local JSON mocks, no fake users, no stub databases.
+
+AUTH REQUIREMENTS (PROGRESSIVE ONBOARDING)
+
+We still do progressive onboarding even with real auth:
+
+User can browse limited feed preview before full signup (SEO/share pages).
+
+Signup/login is required to vote or post.
+
+Profile completion (username/avatar/campus year) can be deferred until after first “fun” action, but must be enforced before posting Moments or submitting YoBeast content.
+
+CAMPUS AUTO-DETECTION + ZIP SEEDING (AUTOMATED)
+
+On first run, request location permission.
+
+Determine user ZIP / region.
+
+Auto-suggest nearby campuses (HS + university).
+
+User selects campus (required).
+
+Campus list MUST come from an automated source (API or dataset), not hardcoded arrays.
+
+Store campus in Supabase, tie user to campus_id.
+
+All content is campus-isolated (RLS enforced).
+
+SEO + SHAREABLE LINKS
+
+Each YoBeast week, clip, poll, and moment must have a shareable URL.
+
+Share pages must render meta tags (title/description/image).
+
+Share pages should show a preview + install/signup CTA.
+
+THE YOBeast DESIGN TEMPLATE SYSTEM (REQUIRED)
+
+Create a reusable YoBeast Template System that ensures every weekly game ships with consistent UI and flow.
+
+It is NOT an auto game generator. It is a structured “weekly config → UI + states” system.
+
+You must implement:
+
+Central config hub for weekly game definition (versioned objects stored in DB + optional repo file mirrors)
+
+Modular components with TypeScript-enforced constraints:
+
+every game uses the same layout skeleton
+
+only allowed slots vary (title, steps, prize, phase, CTA labels, clip rules)
+
+Validation pipeline (runtime + build-time checks):
+
+fail fast if weekly config is missing required fields
+
+Real-time preview in dev
+
+npm run dev shows the current week game in all phases
+
+State machine-driven UI
+
+phases drive what users see (reveal/submissions/voting/finale/cooldown)
+
+Template documentation
+
+how to add/edit a weekly game safely
+
+Audit trail + rollback
+
+store weekly config versions, timestamps, publish status, rollback option
+
+BUILD STRATEGY (DO NOT OVERWHELM YOURSELF)
+
+Implement in 4 deliverable milestones. Each milestone must produce running code.
+
+Milestone 1 — DESIGN SYSTEM + FEED FLOW FIRST (MOST IMPORTANT)
+
+Goal: The app instantly feels like GAS/TikTok: clean, fast, unified.
+
+Build the design tokens + Tailwind theme
+
+Build Home Feed (single vertical)
+
+Build card system (YoBeastCard, PollCard, MomentCard)
+
+Build overlays (Poll overlay, lightweight MysteryBox modal)
+
+Ensure no tab nav appears anywhere
+
+Milestone 2 — AUTH + CAMPUS SEEDING + REAL DATA
+
+Goal: Real users, real campus isolation, real persistence.
+
+Clerk integration
+
+Supabase schema + RLS
+
+campus auto-detection and campus selection
+
+feed loads real content for that campus
+
+Milestone 3 — YoBeast Weekly Engine + Template System
+
+Goal: The weekly spectacle flow works end-to-end.
+
+YoBeastWeek config model + state machine
+
+phases and routes: detail, submit (optional), vote, finale, reel
+
+watch party states (lobby → live vote → reveal)
+
+audit trail + rollback
+
+Milestone 4 — Moments Capture + Sharing + Sponsor Layer
+
+Goal: BeReal capture + viral loop + sponsor value.
+
+moment capture flow (fast)
+
+tie moments to YoBeast week
+
+share templates + OG meta + attribution tracking
+
+sponsor surfaces and redemption instructions
+
+OUTPUT REQUIREMENTS
+
+For the next response, you must do:
+
+Ask me which milestone to implement first ONLY if not clear.
+
+Otherwise begin with Milestone 1 automatically.
+
+Provide:
+
+file tree
+
+full code for every file changed/added
+
+no ellipses, no “TODO”, no placeholders
+
+Keep files small and composable.
+
+Every screen must preserve the ONE FLOW principle.
+
+IMPORTANT: VISUAL QA CHECKLIST (YOU MUST SELF-AUDIT)
+
+Before finishing each milestone, verify:
+
+Does it feel like one continuous app flow, not routes/features?
+
+Are CTAs consistent?
+
+Are colors solid and consistent?
+
+Is typography consistent?
+
+Do overlays return you to feed smoothly?
+
+Is the feed the main hub?
+
+Is it fast and not bloated?
+
+BEGIN
+
+Start implementing Milestone 1 now. The priority is: flow + design + color correctness above all else.
+
+If you want, I can also generate a separate “Milestone 1 UI acceptance checklist” you can hand to your UI/UX engineer so they can confirm the app matches GAS-like flow + the Pantone-inspired solid palette everywhere.
+
+yes. I want real pantone 2025 color pallet for social medai apps. name the colors along with hex
+
+Got it — real, solid, Pantone-aligned 2025/26 colors suitable for SOCIAL + MOBILE APPS, not fashion gradients, not experimental art palettes.
+
+Below is a clean, usable, Gen-Z-appropriate DIGITAL interpretation of Pantone’s 2025 direction (Pantone does not release “hex for apps” officially, so this is how top product teams translate it for UI).
+
+I’m giving you:
+
+Color name (brandable)
+
+Pantone reference direction
+
+Production-safe HEX
+
+How to use it in Yollr
+
+No gradients. No fluff.
+
+✅ YOLLR — PANTONE 2025/26 SOLID UI PALETTE (SOCIAL APPS)
+🖤 Core Neutrals (Foundation – 70% of UI)
+
+These matter more than accent colors.
+
+1. Nightfall Black
+
+Pantone direction: Black 6 C / Dark Neutral Evolution
+
+HEX: #0B0D10
+
+Use:
+
+App background
+
+Feed background
+
+Fullscreen overlays
+
+2. Carbon Slate
+
+Pantone direction: Cool Gray evolution
+
+HEX: #141821
+
+Use:
+
+Cards
+
+Modals
+
+Sheets
+
+Input containers
+
+3. Ash White
+
+Pantone direction: Soft White / Non-pure
+
+HEX: #EDEFF3
+
+Use:
+
+Primary text
+
+Headings
+
+Numbers
+
+4. Muted Steel
+
+Pantone direction: Gray Sand / Quiet Tech
+
+HEX: #9AA3B2
+
+Use:
+
+Secondary text
+
+Metadata
+
+Timestamps
+
+Disabled states
+
+🎯 Primary Accent (ONLY ONE — Critical for UX)
+5. Future Dusk
+
+Pantone Color of the Year 2025 direction (officially hinted)
+
+HEX: #4B4E6D
+
+Use:
+
+Primary CTA buttons
+
+Active states
+
+Selection highlights
+
+Vote button
+
+“Join Drop” actions
+
+⚠️ This replaces loud neon. It’s confident, mature Gen-Z.
+
+🔥 Secondary Accents (Use Sparingly – Contextual)
+6. Digital Grape
+
+Pantone direction: Purple Quartz / Calm Power
+
+HEX: #6A5ACD
+
+Use:
+
+YoBeast headers
+
+Phase badges
+
+Week indicators
+
+7. Electric Coral
+
+Pantone direction: Living Coral evolution
+
+HEX: #FF6F61
+
+Use:
+
+Alerts
+
+Limited-time states
+
+“Live Now” indicators
+
+Finale emphasis
+
+8. Signal Lime
+
+Pantone direction: Green Glow / Bio-Digital
+
+HEX: #9AE66E
+
+Use:
+
+Success
+
+Confirmations
+
+Rewards
+
+Mystery Box wins
+
+9. Ice Cyan
+
+Pantone direction: Blue Atoll / Tech Calm
+
+HEX: #6EC1E4
+
+Use:
+
+Info states
+
+Poll percentages
+
+Neutral highlights

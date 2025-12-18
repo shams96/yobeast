@@ -35,7 +35,7 @@ export default function Feed({ beastWeek, polls, moments }: FeedProps) {
       {/* Vertical Feed - TikTok/IG Style */}
       <div className="flex flex-col space-y-6 pb-8">
         {/* Top Pinned: Beast Card */}
-        <div className="sticky top-[72px] z-40 bg-dark-bg/95 backdrop-blur-lg pb-2">
+        <div className="sticky top-[72px] z-40 bg-nightfall/95 backdrop-blur-lg pb-2">
           <BeastCard beastWeek={beastWeek} onAction={handleBeastAction} />
         </div>
 
@@ -101,13 +101,13 @@ export default function Feed({ beastWeek, polls, moments }: FeedProps) {
 
         {/* End of Feed Indicator */}
         <div className="flex flex-col items-center justify-center py-8 space-y-3">
-          <div className="w-12 h-12 rounded-full bg-dark-elevated flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-carbon flex items-center justify-center">
             <span className="text-2xl">🔥</span>
           </div>
-          <p className="text-sm text-text-tertiary text-center">
+          <p className="text-sm text-steel text-center">
             You're all caught up!
           </p>
-          <p className="text-xs text-text-tertiary text-center max-w-xs">
+          <p className="text-xs text-steel text-center max-w-xs">
             Check back later for more Beast content, Polls, and Moments from your campus.
           </p>
         </div>

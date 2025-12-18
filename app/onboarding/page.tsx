@@ -1,32 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-
-const CAMPUSES = [
-  'Harvard University',
-  'MIT',
-  'Stanford University',
-  'UC Berkeley',
-  'Yale University',
-  'Princeton University',
-  'Columbia University',
-  'University of Pennsylvania',
-  'Cornell University',
-  'Brown University',
-  'Dartmouth College',
-  'Duke University',
-  'Northwestern University',
-  'Vanderbilt University',
-  'Rice University',
-  'Notre Dame',
-  'USC',
-  'UCLA',
-  'Other'
-];
+import { doc, updateDoc, setDoc } from 'firebase/firestore';
+import { db, isFirebaseConfigured } from '@/lib/firebase';
+import { generateInviteCode } from '@/lib/utils/engagement';
 
 const YEARS = [
   'Freshman',
@@ -36,180 +15,245 @@ const YEARS = [
   'Grad Student'
 ];
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const { user } = useUser();
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState('');
   const [campus, setCampus] = useState('');
-  const [customCampus, setCustomCampus] = useState('');
+  const [institutionDomain, setInstitutionDomain] = useState('');
   const [year, setYear] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleNext = () => {
-    if (step === 1 && !campus) {
-      setError('Please select your campus');
-      return;
+  // Load selected institution and validate email
+  useEffect(() => {
+    if (user?.primaryEmailAddress?.emailAddress) {
+      const userEmail = user.primaryEmailAddress.emailAddress;
+      setEmail(userEmail);
+
+      // Get selected institution from localStorage
+      const selectedInstitutionStr = localStorage.getItem('selectedInstitution');
+
+      if (selectedInstitutionStr) {
+        try {
+          const selectedInstitution = JSON.parse(selectedInstitutionStr);
+          setCampus(selectedInstitution.name);
+          setInstitutionDomain(selectedInstitution.domain);
+
+          // Validate that email domain matches selected institution
+          const emailDomain = userEmail.split('@')[1]?.toLowerCase();
+          const expectedDomain = selectedInstitution.domain.toLowerCase();
+
+          if (emailDomain !== expectedDomain) {
+            setError(
+              `Email mismatch: You selected ${selectedInstitution.name} but signed up with @${emailDomain}. ` +
+              `Please sign up with your ${selectedInstitution.name} email (@${expectedDomain}).`
+            );
+          }
+        } catch (err) {
+          console.error('Error parsing selected institution:', err);
+          setError('Please go back and select your institution again.');
+        }
+      } else {
+        // No institution selected - redirect back
+        router.push('/institution-select');
+      }
     }
-    if (step === 1 && campus === 'Other' && !customCampus.trim()) {
-      setError('Please enter your campus name');
-      return;
-    }
-    if (step === 2 && !year) {
+  }, [user, router]);
+
+  const handleComplete = async () => {
+    if (!year) {
       setError('Please select your year');
       return;
     }
-    setError('');
-    setStep(step + 1);
-  };
 
-  const handleComplete = async () => {
     if (!user) return;
+
+    // Check for email domain mismatch
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+    const expectedDomain = institutionDomain.toLowerCase();
+    if (emailDomain !== expectedDomain) {
+      setError(
+        `Please sign up with your ${campus} email (@${expectedDomain}). ` +
+        `You're currently using @${emailDomain}.`
+      );
+      return;
+    }
 
     setLoading(true);
     setError('');
 
     try {
-      const finalCampus = campus === 'Other' ? customCampus.trim() : campus;
-      const userRef = doc(db, 'users', user.id);
+      // Generate unique invite code for new user
+      const userInviteCode = generateInviteCode();
 
-      await updateDoc(userRef, {
-        campus: finalCampus,
+      // Prepare user data
+      const userData: any = {
+        campus: campus,
         year: year,
-      });
+        inviteCode: userInviteCode,
+        inviteSlots: 4,
+        totalInvites: 0,
+        engagementScore: 0,
+        canInvite: false,
+        sessionsCount: 1,
+        lastActive: new Date(),
+        votedInBeastWeek: false,
+        postedMoment: false,
+        reactedToContent: false,
+        day1Return: false,
+        day7Return: false,
+        verificationLevel: 2, // Higher verification level due to .edu email
+        isVerified: true, // Auto-verified with .edu email
+      };
+
+      // In UAT mode, store in Clerk metadata; in production, store in Firebase
+      if (!isFirebaseConfigured()) {
+        // UAT Mode: Store in Clerk user metadata
+        await user.update({
+          unsafeMetadata: {
+            campus: campus,
+            year: year,
+            inviteCode: userInviteCode,
+            onboardingComplete: true,
+            verificationLevel: 2,
+            isVerified: true,
+          },
+        });
+      } else {
+        // Production Mode: Store in Firebase
+        const userRef = doc(db, 'users', user.id);
+        await updateDoc(userRef, userData);
+
+        // Create invite document for new user
+        const inviteRef = doc(db, 'invites', userInviteCode);
+        await setDoc(inviteRef, {
+          id: userInviteCode,
+          inviterId: user.id,
+          inviteeId: null,
+          code: userInviteCode,
+          createdAt: new Date(),
+          redeemedAt: null,
+          status: 'pending',
+          clickCount: 0,
+          pointsAwarded: false,
+          tokensAwarded: false,
+        });
+      }
+
+      // Clear localStorage
+      localStorage.removeItem('selectedInstitution');
 
       router.push('/');
     } catch (err) {
-      console.error('Error updating user:', err);
+      console.error('Error completing onboarding:', err);
       setError('Failed to complete onboarding. Please try again.');
       setLoading(false);
     }
   };
 
+  if (!campus) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-nightfall">
+        <div className="animate-pulse text-ash">Loading...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-dark-bg">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-nightfall">
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-gradient mb-2">
+          <div className="text-6xl mb-4">🔥</div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-digital-grape to-signal-lime bg-clip-text text-transparent mb-2">
             Welcome to Yollr Beast
           </h1>
-          <p className="text-text-secondary">
-            Let's set up your profile in just 2 steps
+          <p className="text-steel">
+            One more step to complete your profile
           </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="flex gap-2">
-          {[1, 2].map((s) => (
-            <div
-              key={s}
-              className={`h-2 flex-1 rounded-full transition-all ${
-                s <= step ? 'bg-gradient-to-r from-accent-fire to-brand-pink' : 'bg-dark-elevated'
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Step Content */}
+        {/* Main Content */}
         <div className="card-elevated p-6 space-y-6">
-          {step === 1 && (
-            <>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-text-primary block">
-                  Select Your Campus
-                </label>
-                <select
-                  value={campus}
-                  onChange={(e) => setCampus(e.target.value)}
-                  className="w-full px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg text-text-primary focus:border-brand-mocha focus:ring-2 focus:ring-brand-mocha/20 outline-none transition-all"
-                >
-                  <option value="">Choose your campus...</option>
-                  {CAMPUSES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {campus === 'Other' && (
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-text-primary block">
-                    Enter Campus Name
-                  </label>
-                  <input
-                    type="text"
-                    value={customCampus}
-                    onChange={(e) => setCustomCampus(e.target.value)}
-                    placeholder="e.g., University of Example"
-                    className="w-full px-4 py-3 bg-dark-elevated border border-dark-border rounded-lg text-text-primary placeholder-text-tertiary focus:border-brand-mocha focus:ring-2 focus:ring-brand-mocha/20 outline-none transition-all"
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-text-primary block">
-                What year are you?
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {YEARS.map((y) => (
-                  <button
-                    key={y}
-                    onClick={() => setYear(y)}
-                    className={`px-4 py-3 rounded-lg font-semibold transition-all ${
-                      year === y
-                        ? 'bg-gradient-to-r from-accent-fire to-brand-pink text-white'
-                        : 'bg-dark-elevated text-text-secondary hover:bg-dark-border'
-                    }`}
-                  >
-                    {y}
-                  </button>
-                ))}
+          {/* Institution Verification */}
+          <div className="p-4 bg-signal-lime/10 border border-signal-lime/20 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">✓</div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-signal-lime">
+                  Institution Verified
+                </p>
+                <p className="text-lg font-bold text-ash mt-1">
+                  {campus}
+                </p>
+                <p className="text-xs text-steel/70 mt-1">
+                  {email}
+                </p>
               </div>
             </div>
-          )}
+          </div>
 
+          {/* Year Selection */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-ash block">
+              What year are you?
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {YEARS.map((y) => (
+                <button
+                  type="button"
+                  key={y}
+                  onClick={() => setYear(y)}
+                  className={`px-4 py-3 rounded-lg font-semibold transition-all border-2 ${
+                    year === y
+                      ? 'bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall border-signal-lime shadow-lg scale-105'
+                      : 'bg-carbon text-steel border-steel/20 hover:border-digital-grape hover:bg-carbon/80'
+                  }`}
+                >
+                  {y}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Error Message */}
           {error && (
             <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
               <p className="text-sm text-red-400">{error}</p>
             </div>
           )}
 
-          {/* Actions */}
-          <div className="flex gap-3">
-            {step > 1 && (
-              <button
-                onClick={() => setStep(step - 1)}
-                className="px-6 py-3 rounded-lg bg-dark-elevated text-text-primary font-semibold hover:bg-dark-border transition-all"
-                disabled={loading}
-              >
-                Back
-              </button>
-            )}
-            <button
-              onClick={step === 2 ? handleComplete : handleNext}
-              disabled={loading}
-              className="flex-1 px-6 py-3 rounded-lg bg-gradient-to-r from-accent-fire to-brand-pink text-white font-semibold hover:shadow-glow active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Completing...' : step === 2 ? 'Complete Setup' : 'Next'}
-            </button>
-          </div>
+          {/* Complete Button */}
+          <button
+            type="button"
+            onClick={handleComplete}
+            disabled={loading || !year}
+            className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall font-semibold hover:shadow-elevated active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Completing...' : 'Complete Setup'}
+          </button>
         </div>
 
-        {/* Campus Info */}
-        <div className="text-center space-y-2">
-          <p className="text-xs text-text-tertiary">
-            Step {step} of 2
-          </p>
-          <p className="text-xs text-text-tertiary">
-            Your campus and year help us connect you with the right Weekly Beast challenges
+        {/* Footer */}
+        <div className="text-center">
+          <p className="text-xs text-steel/70">
+            Your campus email is verified and you're ready to compete!
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-nightfall">
+        <div className="animate-pulse text-ash">Loading...</div>
+      </div>
+    }>
+      <OnboardingContent />
+    </Suspense>
   );
 }

@@ -16,6 +16,38 @@ export default function BeastVotePage() {
   const currentClip = finalists[currentIndex];
   const hasVoted = votedClipId !== null;
 
+  // Handle empty finalists state
+  if (finalists.length === 0) {
+    return (
+      <div className="fixed inset-0 bg-nightfall flex flex-col items-center justify-center p-6">
+        <Link
+          href="/"
+          className="absolute top-6 left-6 w-10 h-10 rounded-full bg-carbon border-2 border-steel/30 flex items-center justify-center text-ash hover:bg-carbon/80 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </Link>
+
+        <div className="max-w-md text-center space-y-6">
+          <div className="text-6xl mb-4">🎬</div>
+          <h1 className="text-2xl font-bold text-ash">
+            Voting Opens Soon!
+          </h1>
+          <p className="text-steel leading-relaxed">
+            Submissions are still open. Check back after the submission deadline to vote for your favorite Beast clips!
+          </p>
+          <Link
+            href="/"
+            className="inline-block bg-digital-grape text-white font-semibold px-8 py-3 rounded-xl hover:bg-digital-grape/90 transition-colors"
+          >
+            Back to Feed
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const handleVote = (clipId: string) => {
     if (hasVoted) return;
 
@@ -76,7 +108,7 @@ export default function BeastVotePage() {
         <div className="flex items-center justify-between p-4">
           <Link
             href="/"
-            className="w-10 h-10 rounded-full glass-elevated flex items-center justify-center text-white"
+            className="w-10 h-10 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -84,7 +116,7 @@ export default function BeastVotePage() {
           </Link>
 
           {/* Progress Indicator */}
-          <div className="glass-elevated px-4 py-2 rounded-full">
+          <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full">
             <span className="text-sm font-semibold text-white">
               Finalist {currentIndex + 1} / {finalists.length}
             </span>
@@ -134,10 +166,10 @@ export default function BeastVotePage() {
             />
 
             {/* Clip Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-carbon/90">
               {/* Creator Info */}
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-pink to-brand-purple flex items-center justify-center text-white font-semibold">
+                <div className="w-10 h-10 rounded-full bg-digital-grape border-2 border-digital-grape/30 flex items-center justify-center text-white font-semibold">
                   {currentClip.user?.name.charAt(0) || 'A'}
                 </div>
                 <div>
@@ -149,8 +181,8 @@ export default function BeastVotePage() {
                   </p>
                 </div>
                 {currentClip.isBoosted && (
-                  <div className="ml-auto bg-accent-gold/20 px-2 py-1 rounded-full">
-                    <span className="text-xs font-semibold text-accent-gold">
+                  <div className="ml-auto bg-signal-lime/20 px-2 py-1 rounded-full border border-signal-lime/30">
+                    <span className="text-xs font-semibold text-signal-lime">
                       ⚡ Boosted
                     </span>
                   </div>
@@ -176,7 +208,7 @@ export default function BeastVotePage() {
         {currentIndex > 0 && (
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full glass-elevated flex items-center justify-center text-white hover:scale-110 transition-transform active:scale-95"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white hover:scale-110 transition-transform active:scale-95"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
@@ -187,7 +219,7 @@ export default function BeastVotePage() {
         {currentIndex < finalists.length - 1 && (
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full glass-elevated flex items-center justify-center text-white hover:scale-110 transition-transform active:scale-95"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white hover:scale-110 transition-transform active:scale-95"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
@@ -202,7 +234,7 @@ export default function BeastVotePage() {
           {hasVoted ? (
             <div className="space-y-4">
               {votedClipId === currentClip.id ? (
-                <div className="bg-accent-fire/20 backdrop-blur-lg border border-accent-fire/30 rounded-2xl p-6 text-center">
+                <div className="bg-signal-lime/20 border-2 border-signal-lime/30 rounded-2xl p-6 text-center shadow-elevated">
                   <div className="text-4xl mb-2">✓</div>
                   <p className="text-white font-semibold mb-1">
                     You voted for this Beast!
@@ -212,7 +244,7 @@ export default function BeastVotePage() {
                   </p>
                 </div>
               ) : (
-                <div className="glass-elevated rounded-2xl p-4 text-center">
+                <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated rounded-2xl p-4 text-center">
                   <p className="text-white/80 text-sm">
                     ✓ You've already voted this week
                   </p>
@@ -223,12 +255,13 @@ export default function BeastVotePage() {
             <button
               onClick={() => handleVote(currentClip.id)}
               className="
-                w-full bg-gradient-to-r from-accent-fire to-brand-pink
-                text-white font-bold text-lg
+                w-full bg-signal-lime
+                text-nightfall font-bold text-lg
                 px-8 py-4 rounded-2xl
-                shadow-glow
+                border-2 border-signal-lime/30
+                shadow-elevated
                 active:scale-95 transition-transform duration-150
-                hover:shadow-elevated
+                hover:shadow-button
               "
             >
               🔥 Vote for this Beast

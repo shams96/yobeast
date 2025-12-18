@@ -14,10 +14,10 @@ export default function BeastTimeline({ beastWeek }: BeastTimelineProps) {
     <div className="w-full px-6 py-4">
       {/* Timeline Container */}
       <div className="relative">
-        {/* Progress Line */}
-        <div className="absolute top-6 left-0 right-0 h-0.5 bg-dark-border" />
+        {/* Progress Line - Solid background */}
+        <div className="absolute top-6 left-0 right-0 h-0.5 bg-steel/30" />
         <div
-          className="absolute top-6 left-0 h-0.5 bg-gradient-to-r from-brand-pink to-brand-mocha transition-all duration-500"
+          className="absolute top-6 left-0 h-0.5 bg-digital-grape transition-all duration-500"
           style={{
             width: `${(steps.findIndex(s => s.isActive) / (steps.length - 1)) * 100}%`,
           }}
@@ -27,26 +27,26 @@ export default function BeastTimeline({ beastWeek }: BeastTimelineProps) {
         <div className="relative flex justify-between">
           {steps.map((step, index) => (
             <div key={step.phase} className="flex flex-col items-center">
-              {/* Circle */}
+              {/* Circle - Solid colors only */}
               <div
                 className={`
                   w-12 h-12 rounded-full flex items-center justify-center
                   transition-all duration-300
                   ${
                     step.isActive
-                      ? 'bg-gradient-to-br from-accent-fire to-brand-pink ring-4 ring-accent-fire/30 scale-110'
+                      ? 'bg-digital-grape ring-4 ring-digital-grape/30 scale-110 border-2 border-digital-grape/50'
                       : step.isComplete
-                      ? 'bg-brand-mocha'
-                      : 'bg-dark-surface border-2 border-dark-border'
+                      ? 'bg-signal-lime border-2 border-signal-lime/30'
+                      : 'bg-carbon border-2 border-steel/30'
                   }
                 `}
               >
                 {step.isComplete ? (
-                  <span className="text-white text-lg">✓</span>
+                  <span className="text-ash text-lg">✓</span>
                 ) : step.isActive ? (
-                  <span className="text-white text-lg font-bold animate-pulse">●</span>
+                  <span className="text-ash text-lg font-bold animate-pulse">●</span>
                 ) : (
-                  <span className="text-text-tertiary text-sm font-semibold">
+                  <span className="text-steel text-sm font-semibold">
                     {index + 1}
                   </span>
                 )}
@@ -57,7 +57,7 @@ export default function BeastTimeline({ beastWeek }: BeastTimelineProps) {
                 <div
                   className={`
                     text-xs font-semibold
-                    ${step.isActive ? 'text-accent-fire' : 'text-text-tertiary'}
+                    ${step.isActive ? 'text-digital-grape' : 'text-steel'}
                   `}
                 >
                   {step.day}
@@ -65,7 +65,7 @@ export default function BeastTimeline({ beastWeek }: BeastTimelineProps) {
                 <div
                   className={`
                     text-[10px]
-                    ${step.isActive ? 'text-text-primary' : 'text-text-tertiary'}
+                    ${step.isActive ? 'text-ash' : 'text-steel'}
                   `}
                 >
                   {step.label}

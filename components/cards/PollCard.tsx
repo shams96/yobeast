@@ -36,12 +36,12 @@ export default function PollCard({ poll, hasVoted = false, userVote, onVote }: P
             <div className="flex items-center gap-2">
               <span className="text-lg">📊</span>
               {poll.beastLinkage && (
-                <span className="text-xs font-semibold text-brand-mocha bg-brand-mocha/10 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-semibold text-digital-grape bg-digital-grape/15 px-2.5 py-0.5 rounded-full border border-digital-grape/30">
                   Beast Poll
                 </span>
               )}
             </div>
-            <h3 className="text-base font-semibold text-text-primary leading-snug">
+            <h3 className="text-base font-semibold text-ash leading-snug">
               {poll.question}
             </h3>
           </div>
@@ -62,23 +62,21 @@ export default function PollCard({ poll, hasVoted = false, userVote, onVote }: P
                 className={`
                   w-full relative overflow-hidden rounded-xl p-3
                   transition-all duration-200
+                  border
                   ${showResults
                     ? 'cursor-default'
-                    : 'cursor-pointer active:scale-[0.98] hover:bg-dark-elevated'
+                    : 'cursor-pointer active:scale-[0.98] hover:bg-carbon/80 hover:border-steel/30'
                   }
-                  ${isSelected && !showResults ? 'bg-dark-elevated ring-2 ring-brand-mocha' : ''}
-                  ${!showResults ? 'bg-dark-surface' : ''}
+                  ${isSelected && !showResults ? 'bg-carbon/80 border-digital-grape' : 'border-steel/20'}
+                  ${!showResults ? 'bg-carbon/50' : 'bg-carbon/30'}
                 `}
               >
-                {/* Progress Bar (shown after voting) */}
+                {/* Progress Bar (solid color, no gradients) */}
                 {showResults && (
                   <div
                     className={`
                       absolute inset-0 transition-all duration-500
-                      ${isWinning
-                        ? 'bg-gradient-to-r from-accent-fire/20 to-accent-fire/5'
-                        : 'bg-gradient-to-r from-brand-mocha/10 to-brand-mocha/5'
-                      }
+                      ${isWinning ? 'bg-future-dusk/30' : 'bg-digital-grape/15'}
                     `}
                     style={{ width: `${percentage}%` }}
                   />
@@ -88,11 +86,11 @@ export default function PollCard({ poll, hasVoted = false, userVote, onVote }: P
                 <div className="relative flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {showResults && isSelected && (
-                      <span className="text-accent-fire">✓</span>
+                      <span className="text-future-dusk">✓</span>
                     )}
                     <span className={`
                       text-sm font-medium
-                      ${showResults && isWinning ? 'text-text-primary font-semibold' : 'text-text-secondary'}
+                      ${showResults && isWinning ? 'text-ash font-semibold' : 'text-steel'}
                     `}>
                       {option.text}
                     </span>
@@ -101,7 +99,7 @@ export default function PollCard({ poll, hasVoted = false, userVote, onVote }: P
                   {showResults && (
                     <span className={`
                       text-sm font-bold
-                      ${isWinning ? 'text-accent-fire' : 'text-text-tertiary'}
+                      ${isWinning ? 'text-future-dusk' : 'text-steel'}
                     `}>
                       {percentage.toFixed(0)}%
                     </span>
@@ -113,17 +111,17 @@ export default function PollCard({ poll, hasVoted = false, userVote, onVote }: P
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between text-xs text-text-tertiary pt-2">
+        <div className="flex items-center justify-between text-xs text-steel pt-2">
           <span>{poll.totalVotes.toLocaleString()} votes</span>
           {poll.beastLinkage && (
-            <span className="text-brand-mocha font-medium">
+            <span className="text-digital-grape font-medium">
               Affects: {poll.beastLinkage.replace('_', ' ')}
             </span>
           )}
         </div>
 
         {showResults && (
-          <div className="text-xs text-text-secondary text-center">
+          <div className="text-xs text-steel text-center bg-signal-lime/10 py-2 rounded-xl border border-signal-lime/30">
             ✅ You voted! Earn +5 Vault Points
           </div>
         )}

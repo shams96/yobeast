@@ -66,13 +66,9 @@ export default function BeastFinalePage() {
   // LOBBY STATE
   if (finaleState === 'LOBBY') {
     return (
-      <div className="min-h-screen relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-purple via-accent-fire to-brand-pink animate-pulse-slow" />
-        <div className="absolute inset-0 backdrop-blur-3xl bg-dark-bg/60" />
-
+      <div className="min-h-screen relative overflow-hidden bg-future-dusk">
         {/* Content */}
-        <div className="relative flex flex-col items-center justify-center min-h-screen p-6 text-center">
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
           {/* Logo/Icon */}
           <div className="text-8xl mb-6 animate-scale-in">
             🎪
@@ -87,7 +83,7 @@ export default function BeastFinalePage() {
           </p>
 
           {/* Countdown Card */}
-          <div className="glass-elevated p-8 rounded-3xl mb-8 max-w-sm w-full">
+          <div className="bg-carbon border-2 border-future-dusk/30 shadow-elevated p-8 rounded-3xl mb-8 max-w-sm w-full">
             <p className="text-sm text-white/70 mb-2">
               Final round starts in
             </p>
@@ -100,8 +96,8 @@ export default function BeastFinalePage() {
           </div>
 
           {/* Online Count */}
-          <div className="glass-elevated px-6 py-3 rounded-full flex items-center gap-3 mb-8">
-            <div className="w-2 h-2 rounded-full bg-accent-cyan animate-pulse" />
+          <div className="bg-carbon border-2 border-future-dusk/30 shadow-elevated px-6 py-3 rounded-full flex items-center gap-3 mb-8">
+            <div className="w-2 h-2 rounded-full bg-signal-lime animate-pulse" />
             <span className="text-white font-semibold">
               {onlineCount} students online
             </span>
@@ -157,7 +153,7 @@ export default function BeastFinalePage() {
           {/* Close */}
           <Link
             href="/"
-            className="absolute top-4 left-4 w-10 h-10 rounded-full glass-elevated flex items-center justify-center text-white safe-top"
+            className="absolute top-4 left-4 w-10 h-10 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white safe-top"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -176,20 +172,20 @@ export default function BeastFinalePage() {
         <div className="absolute top-0 left-0 right-0 z-10 safe-top p-4 space-y-3">
           {/* Timer & Online */}
           <div className="flex items-center justify-between">
-            <div className="glass-elevated px-4 py-2 rounded-full flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-accent-fire animate-pulse" />
+            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-electric-coral animate-pulse" />
               <span className="text-sm font-bold text-white">
                 LIVE
               </span>
             </div>
 
-            <div className="glass-elevated px-4 py-2 rounded-full">
+            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full">
               <span className="text-sm font-semibold text-white">
                 ⏱️ {formatTime(timeRemaining)}
               </span>
             </div>
 
-            <div className="glass-elevated px-4 py-2 rounded-full">
+            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full">
               <span className="text-xs text-white/80">
                 👥 {onlineCount}
               </span>
@@ -219,7 +215,7 @@ export default function BeastFinalePage() {
             />
 
             {/* Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-carbon/90">
               <p className="text-white font-semibold mb-1">
                 {currentClip.user?.name}
               </p>
@@ -233,7 +229,7 @@ export default function BeastFinalePage() {
           {currentClipIndex > 0 && (
             <button
               onClick={() => setCurrentClipIndex(currentClipIndex - 1)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full glass-elevated flex items-center justify-center text-white"
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
             >
               ←
             </button>
@@ -241,7 +237,7 @@ export default function BeastFinalePage() {
           {currentClipIndex < finalists.length - 1 && (
             <button
               onClick={() => setCurrentClipIndex(currentClipIndex + 1)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full glass-elevated flex items-center justify-center text-white"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
             >
               →
             </button>
@@ -252,7 +248,7 @@ export default function BeastFinalePage() {
         <div className="absolute bottom-0 left-0 right-0 p-6 safe-bottom">
           <div className="max-w-md mx-auto">
             {votedClipId ? (
-              <div className="glass-elevated p-6 rounded-2xl text-center">
+              <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated p-6 rounded-2xl text-center">
                 <p className="text-white font-semibold">
                   {votedClipId === currentClip.id ? '✓ Your Vote' : 'You Voted'}
                 </p>
@@ -293,10 +289,7 @@ export default function BeastFinalePage() {
 
   // REVEAL STATE
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Confetti Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-accent-gold via-accent-fire to-brand-pink" />
-      <div className="absolute inset-0 backdrop-blur-2xl bg-dark-bg/40" />
+    <div className="min-h-screen relative overflow-hidden bg-signal-lime">
 
       {confettiActive && (
         <div className="absolute inset-0 pointer-events-none">
@@ -331,8 +324,8 @@ export default function BeastFinalePage() {
         </p>
 
         {/* Winner Card */}
-        <div className="glass-elevated p-8 rounded-3xl mb-8 max-w-sm w-full animate-scale-in">
-          <div className="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4 ring-4 ring-accent-gold">
+        <div className="bg-carbon border-2 border-signal-lime/30 shadow-elevated p-8 rounded-3xl mb-8 max-w-sm w-full animate-scale-in">
+          <div className="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4 ring-4 ring-nightfall">
             <img
               src={winnerClip.thumbnailUrl}
               alt={winnerClip.user?.name}
@@ -345,9 +338,9 @@ export default function BeastFinalePage() {
           <p className="text-white/70 text-sm mb-4">
             "{winnerClip.caption}"
           </p>
-          <div className="inline-flex items-center gap-2 bg-accent-gold/20 px-4 py-2 rounded-full">
+          <div className="inline-flex items-center gap-2 bg-nightfall/20 px-4 py-2 rounded-full border border-nightfall/30">
             <span className="text-2xl">💰</span>
-            <span className="text-accent-gold font-bold">
+            <span className="text-nightfall font-bold">
               ${beastWeek.prize.amount} Winner
             </span>
           </div>

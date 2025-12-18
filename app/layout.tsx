@@ -3,8 +3,7 @@ import { Inter } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import { dark } from '@clerk/themes';
 import './globals.css';
-import Header from '@/components/Header';
-import ClientProviders from '@/components/ClientProviders';
+import ClientLayout from '@/components/ClientLayout';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -122,15 +121,8 @@ export default function RootLayout({
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         </head>
-        <body className="antialiased bg-dark-bg text-text-primary min-h-screen">
-          <ClientProviders>
-            <div className="flex flex-col min-h-screen max-w-screen-xl mx-auto">
-              <Header />
-              <main className="flex-1 pb-safe-bottom" role="main">
-                {children}
-              </main>
-            </div>
-          </ClientProviders>
+        <body className="antialiased bg-nightfall text-ash min-h-screen">
+          <ClientLayout>{children}</ClientLayout>
         </body>
       </html>
     </ClerkProvider>
