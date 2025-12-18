@@ -5,15 +5,17 @@ import Feed from '@/components/Feed';
 import { useCurrentBeastWeek } from '@/lib/hooks/useCurrentBeastWeek';
 import { usePolls } from '@/lib/hooks/usePolls';
 import { useMoments } from '@/lib/hooks/useMoments';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { FeedSkeleton } from '@/components/SkeletonLoader';
 import { MOCK_BEAST_WEEK } from '@/lib/mockData';
 import Link from 'next/link';
 
 export default function HomePage() {
   const { isSignedIn, isLoaded } = useUser();
+  const { user: currentUser } = useCurrentUser();
   const { beastWeek: fetchedBeastWeek, loading: beastLoading, error: beastError } = useCurrentBeastWeek();
   const { polls, loading: pollsLoading } = usePolls(fetchedBeastWeek?.id);
-  const { moments, loading: momentsLoading } = useMoments();
+  const { moments, loading: momentsLoading } = useMoments(undefined, currentUser?.campusDomain);
 
   // Use mock data if Firebase fails
   const beastWeek = beastError ? MOCK_BEAST_WEEK : fetchedBeastWeek;
