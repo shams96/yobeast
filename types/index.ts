@@ -51,6 +51,89 @@ export interface User {
   zipCode?: string;             // For geo-based campus
   verificationLevel: number;    // 1=phone, 2=location, 3=.edu email
   isVerified: boolean;          // At least level 2
+
+  // Inclusion features
+  beastSubmissionsCount?: number;    // Total Beast submissions
+  isFirstTimeSubmitter?: boolean;    // First time submitting to Beast
+  preferAnonymous?: boolean;         // User prefers anonymous mode
+  isUnderdog?: boolean;              // System identifies as underdog
+}
+
+// Business Sponsorship Types
+export interface Sponsor {
+  businessName: string;
+  logo: string;
+  prizeDescription: string;
+  claimLocation: string;
+  claimCode?: string;
+  expirationDate?: Date;
+  estimatedValue: number;
+  retailValue: number;
+  claimRequirement: 'winner_only' | 'winner_plus_friends' | 'top_3';
+  numberOfRecipients?: number;
+  requiresPhoto?: boolean;
+  shareHashtag?: string;
+  studentReach?: number;
+  expectedROI?: number;
+}
+
+export interface BeastPrize {
+  cashAmount: number;
+  currency: string;
+  sponsors: Sponsor[];
+  combinedValue: number;
+  displayString: string;
+}
+
+// Campus Rivalry Types
+export interface CampusStats {
+  campusId: string;
+  campusName: string;
+  mascot: string;
+  colors: string[];
+
+  // Weekly metrics
+  weeklyParticipation: number;
+  beastSubmissions: number;
+  totalVotes: number;
+  avgSubmissionQuality: number;
+
+  // All-time records
+  totalBeastWins: number;
+  longestWinStreak: number;
+  currentStreak: number;
+
+  // Rivalry records
+  rivalryRecord: {
+    [rivalCampusId: string]: {
+      wins: number;
+      losses: number;
+      lastMeetup?: Date;
+      lastWinner?: string;
+      allTimeRecord: string;
+    };
+  };
+
+  // Rankings
+  powerRanking: number;
+  nationalRank: number;
+  regionalRank?: number;
+}
+
+// Inclusion Features Types
+export interface InclusionFeatures {
+  anonymousMode?: {
+    enabled: boolean;
+    revealIfTop10?: boolean;
+    revealIfWinner?: boolean;
+    neverReveal?: boolean;
+  };
+  firstTimeSubmitter?: {
+    bonusPoints: number;
+    voteBoost: number;
+  };
+  isUnderdog?: boolean;
+  underdogBoost?: number;
 }
 
 export interface BeastWeek {
@@ -62,17 +145,18 @@ export interface BeastWeek {
   startDate: Date;
   endDate: Date;
   phase: BeastPhase;
-  prize: {
-    amount: number;
-    currency: string;
-    sponsor?: string;
-  };
+  prize: BeastPrize; // Enhanced with sponsors
   rules: string[];
   submissionDeadline: Date;
   votingDeadline: Date;
   finaleTime: Date;
   maxDuration: number; // seconds
   isActive: boolean;
+
+  // Rivalry week features
+  isRivalryWeek?: boolean;
+  rivalCampusId?: string;
+  rivalCampusName?: string;
 }
 
 export interface BeastClip {
@@ -92,6 +176,12 @@ export interface BeastClip {
   status: 'pending' | 'approved' | 'rejected' | 'finalist' | 'winner';
   createdAt: Date;
   user?: User;
+
+  // Inclusion features
+  isAnonymous?: boolean;         // Submitted anonymously
+  isFirstTimeSubmission?: boolean; // User's first Beast submission
+  hasUnderdogBoost?: boolean;    // Has received underdog boost
+  revealedAt?: Date;             // When anonymous user revealed identity
 }
 
 export interface BeastVote {
@@ -223,21 +313,39 @@ export const MOCK_CURRENT_USER: User = {
 };
 
 export const MOCK_BEAST_WEEK: BeastWeek = {
-  id: 'beast_week_007',
-  weekNumber: 7,
-  title: '3-Clip Comedy Sprint',
-  description: 'Make your campus laugh in 15 seconds or less. Best comedy clip wins.',
-  theme: 'comedy',
+  id: 'beast_week_001',
+  weekNumber: 1,
+  title: 'Week 1 Beast Challenge',
+  description: 'Submit your best campus content and compete to become this week\'s Beast champion!',
+  theme: 'campus_life',
   startDate: new Date('2025-01-13'),
   endDate: new Date('2025-01-19'),
   phase: 'BEAST_REVEAL',
   prize: {
-    amount: 250,
+    cashAmount: 100,
     currency: 'USD',
-    sponsor: 'Campus Eats',
+    sponsors: [
+      {
+        businessName: 'Insomnia Cookies',
+        logo: '/sponsors/insomnia-cookies.png',
+        prizeDescription: 'Free dozen cookies every week for a month',
+        claimLocation: '1234 College Ave',
+        claimCode: 'BEAST_WEEK_1',
+        expirationDate: new Date('2025-02-19'),
+        estimatedValue: 80,
+        retailValue: 120,
+        claimRequirement: 'winner_only',
+        requiresPhoto: true,
+        shareHashtag: '#YollrBeast #InsomniaWins',
+        studentReach: 5000,
+        expectedROI: 500,
+      },
+    ],
+    combinedValue: 180,
+    displayString: '$100 + Free Insomnia Cookies for a month',
   },
   rules: [
-    'Must be 15 seconds or less',
+    'Must be 30 seconds or less',
     'Keep it campus-appropriate',
     'Original content only',
     'One submission per student',
@@ -245,6 +353,6 @@ export const MOCK_BEAST_WEEK: BeastWeek = {
   submissionDeadline: new Date('2025-01-15T23:59:59'),
   votingDeadline: new Date('2025-01-17T23:59:59'),
   finaleTime: new Date('2025-01-18T18:00:00'),
-  maxDuration: 15,
+  maxDuration: 30,
   isActive: true,
 };
