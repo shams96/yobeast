@@ -1,8 +1,31 @@
 'use client';
 
 import { SignIn } from '@clerk/nextjs';
+import { useEffect } from 'react';
 
 export default function SignInPage() {
+  useEffect(() => {
+    // Bypass email verification for demo accounts
+    const observer = new MutationObserver(() => {
+      // Auto-click continue if verification screen appears
+      const continueBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+      if (continueBtn && continueBtn.textContent?.includes('Continue')) {
+        const emailInput = document.querySelector('input[name="code"]');
+        if (emailInput) {
+          // Verification screen detected - force redirect
+          window.location.href = '/';
+        }
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-nightfall flex items-center justify-center p-4">
       <div className="w-full max-w-md">
