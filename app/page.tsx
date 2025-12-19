@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import Feed from '@/components/Feed';
 import { useCurrentBeastWeek } from '@/lib/hooks/useCurrentBeastWeek';
 import { usePolls } from '@/lib/hooks/usePolls';
@@ -10,19 +10,19 @@ import { MOCK_BEAST_WEEK } from '@/lib/mockData';
 import Link from 'next/link';
 
 export default function HomePage() {
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, loading } = useCurrentUser();
   const { beastWeek: fetchedBeastWeek, loading: beastLoading, error: beastError } = useCurrentBeastWeek();
   const { polls, loading: pollsLoading } = usePolls(fetchedBeastWeek?.id);
   const { moments, loading: momentsLoading } = useMoments();
 
   // Use mock data if Firebase fails
   const beastWeek = beastError ? MOCK_BEAST_WEEK : fetchedBeastWeek;
-  const isLoading = !isLoaded || beastLoading || pollsLoading || momentsLoading;
+  const isLoading = loading || beastLoading || pollsLoading || momentsLoading;
 
   // Show landing page for unauthenticated users
   // NOTE: Using min-h-[calc(100vh-4rem)] to account for global Header height (~4rem)
   // DO NOT use min-h-screen here - Header is already rendered by ClientLayout
-  if (isLoaded && !isSignedIn) {
+  if (!loading && !isSignedIn) {
     return (
       <div className="min-h-[calc(100vh-4rem)] bg-nightfall flex flex-col items-center justify-center p-6 relative overflow-hidden">
         {/* Background gradient */}

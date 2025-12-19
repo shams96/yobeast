@@ -5,12 +5,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { isValidInviteCode } from '@/lib/utils/engagement';
-import { useUser } from '@clerk/nextjs';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 
 export default function InviteLandingPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = useCurrentUser();
   const inviteCode = (params.code as string)?.toUpperCase();
 
   const [inviterData, setInviterData] = useState<any>(null);

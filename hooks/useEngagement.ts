@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import {
@@ -13,40 +13,27 @@ import type { User } from '@/types';
 type EngagementAction = 'vote' | 'post' | 'react' | 'session' | 'return';
 
 export function useEngagement() {
-  const { user: clerkUser } = useUser();
+  const { user } = useCurrentUser();
   const [userData, setUserData] = useState<Partial<User> | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch user data from Firestore
+  // Use user data from auth context
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!clerkUser) return;
-
-      try {
-        const userRef = doc(db, 'users', clerkUser.id);
-        const userDoc = await getDoc(userRef);
-
-        if (userDoc.exists()) {
-          setUserData(userDoc.data() as User);
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
-    fetchUserData();
-  }, [clerkUser]);
+    if (user) {
+      setUserData(user);
+    }
+  }, [user]);
 
   // Track session on mount
   useEffect(() => {
-    if (clerkUser && userData) {
+    if (user && userData) {
       trackAction('session');
     }
-  }, [clerkUser]);
+  }, [user]);
 
   const trackAction = useCallback(
     async (action: EngagementAction) => {
-      if (!clerkUser || !userData) return;
+      if (!user || !userData) return;
 
       setLoading(true);
 
@@ -89,8 +76,8 @@ export function useEngagement() {
           });
         }
 
-        // Update Firestore
-        const userRef = doc(db, 'users', clerkUser.id);
+        // Update Firestore if configured
+        const userRef = doc(db, 'users', user.id);
         await updateDoc(userRef, updates as any);
 
         // Update local state
@@ -103,7 +90,7 @@ export function useEngagement() {
         setLoading(false);
       }
     },
-    [clerkUser, userData]
+    [user, userData]
   );
 
   const checkInviteUnlock = useCallback(() => {

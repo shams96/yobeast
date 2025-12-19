@@ -1,40 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { User } from '@/types';
+import { useState } from 'react';
+import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function InvitesPage() {
-  const { user: clerkUser } = useUser();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useCurrentUser();
   const [showQR, setShowQR] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!clerkUser) return;
-
-      try {
-        const userRef = doc(db, 'users', clerkUser.id);
-        const userDoc = await getDoc(userRef);
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as User;
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [clerkUser]);
 
   const inviteLink = user ? `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?code=${user.inviteCode}` : '';
 
