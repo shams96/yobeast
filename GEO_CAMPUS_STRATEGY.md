@@ -3,7 +3,7 @@
 ## 🌍 Model: Hyperlocal Campus Communities
 
 **Concept:** Campuses are **geographic zones**, not just universities. Users access campus content based on their **physical location** (ZIP code).
-
+** at login GEO location and ZIP determined, and avaiable High school, colleges and universities are auto populated in a dropdown menu for user to select from.
 ### Examples:
 - **Harvard Square** (ZIP: 02138) → "Harvard Campus"
 - **Downtown Boston** (ZIP: 02110-02199) → "Boston Campus"

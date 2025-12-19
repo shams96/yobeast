@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '@/lib/firebase';
 import { generateInviteCode } from '@/lib/utils/engagement';
@@ -16,7 +16,7 @@ const YEARS = [
 ];
 
 function OnboardingContent() {
-  const { user } = useUser();
+  const { user, updateUser } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [campus, setCampus] = useState('');
@@ -25,11 +25,13 @@ function OnboardingContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Load selected institution and validate email
+  // Load selected institution and user data
   useEffect(() => {
-    if (user?.primaryEmailAddress?.emailAddress) {
-      const userEmail = user.primaryEmailAddress.emailAddress;
-      setEmail(userEmail);
+    if (user) {
+      // User already exists from auth context
+      setEmail(user.username + '@' + (user.campusDomain || 'email.edu'));
+      setCampus(user.campus);
+      setInstitutionDomain(user.campusDomain || '');
 
       // Get selected institution from localStorage
       const selectedInstitutionStr = localStorage.getItem('selectedInstitution');
@@ -39,23 +41,12 @@ function OnboardingContent() {
           const selectedInstitution = JSON.parse(selectedInstitutionStr);
           setCampus(selectedInstitution.name);
           setInstitutionDomain(selectedInstitution.domain);
-
-          // Validate that email domain matches selected institution
-          const emailDomain = userEmail.split('@')[1]?.toLowerCase();
-          const expectedDomain = selectedInstitution.domain.toLowerCase();
-
-          if (emailDomain !== expectedDomain) {
-            setError(
-              `Email mismatch: You selected ${selectedInstitution.name} but signed up with @${emailDomain}. ` +
-              `Please sign up with your ${selectedInstitution.name} email (@${expectedDomain}).`
-            );
-          }
         } catch (err) {
           console.error('Error parsing selected institution:', err);
           setError('Please go back and select your institution again.');
         }
-      } else {
-        // No institution selected - redirect back
+      } else if (!user.campusDomain) {
+        // No institution selected and not in user - redirect back
         router.push('/institution-select');
       }
     }
@@ -69,61 +60,33 @@ function OnboardingContent() {
 
     if (!user) return;
 
-    // Check for email domain mismatch
-    const emailDomain = email.split('@')[1]?.toLowerCase();
-    const expectedDomain = institutionDomain.toLowerCase();
-    if (emailDomain !== expectedDomain) {
-      setError(
-        `Please sign up with your ${campus} email (@${expectedDomain}). ` +
-        `You're currently using @${emailDomain}.`
-      );
-      return;
-    }
-
     setLoading(true);
     setError('');
 
     try {
-      // Generate unique invite code for new user
-      const userInviteCode = generateInviteCode();
+      // Generate unique invite code for new user (or use existing)
+      const userInviteCode = user.inviteCode || generateInviteCode();
 
-      // Prepare user data
-      const userData: any = {
+      // Update user with year and complete onboarding info
+      const updatedData = {
+        year: year as 'Freshman' | 'Sophomore' | 'Junior' | 'Senior' | 'Grad Student',
         campus: campus,
-        year: year,
+        campusDomain: institutionDomain,
         inviteCode: userInviteCode,
-        inviteSlots: 4,
-        totalInvites: 0,
-        engagementScore: 0,
-        canInvite: false,
-        sessionsCount: 1,
         lastActive: new Date(),
-        votedInBeastWeek: false,
-        postedMoment: false,
-        reactedToContent: false,
-        day1Return: false,
-        day7Return: false,
-        verificationLevel: 2, // Higher verification level due to .edu email
-        isVerified: true, // Auto-verified with .edu email
       };
 
-      // In UAT mode, store in Clerk metadata; in production, store in Firebase
-      if (!isFirebaseConfigured()) {
-        // UAT Mode: Store in Clerk user metadata
-        await user.update({
-          unsafeMetadata: {
-            campus: campus,
-            year: year,
-            inviteCode: userInviteCode,
-            onboardingComplete: true,
-            verificationLevel: 2,
-            isVerified: true,
-          },
-        });
-      } else {
-        // Production Mode: Store in Firebase
+      // Update user in auth context (saves to localStorage)
+      updateUser(updatedData);
+
+      // Also save to Firebase if configured
+      if (isFirebaseConfigured()) {
         const userRef = doc(db, 'users', user.id);
-        await updateDoc(userRef, userData);
+        await updateDoc(userRef, {
+          ...updatedData,
+          verificationLevel: 2,
+          isVerified: true,
+        });
 
         // Create invite document for new user
         const inviteRef = doc(db, 'invites', userInviteCode);
@@ -144,7 +107,8 @@ function OnboardingContent() {
       // Clear localStorage
       localStorage.removeItem('selectedInstitution');
 
-      router.push('/');
+      // Redirect to feed
+      router.push('/feed');
     } catch (err) {
       console.error('Error completing onboarding:', err);
       setError('Failed to complete onboarding. Please try again.');

@@ -19,6 +19,7 @@ export interface User {
   avatar?: string;
   avatarUrl?: string; // Keep for backward compatibility
   campus: string;
+  campusDomain?: string; // Institution email domain for data fencing (e.g., 'harvard.edu')
   year?: 'Freshman' | 'Sophomore' | 'Junior' | 'Senior' | 'Grad Student' | 'Not Set';
   points: number;
   beastTokens: number;

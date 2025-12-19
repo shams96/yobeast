@@ -1,7 +1,10 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// Temporarily disabled - allow all routes without auth
-export default clerkMiddleware();
+// Demo mode - no authentication middleware required
+export function middleware(request: NextRequest) {
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

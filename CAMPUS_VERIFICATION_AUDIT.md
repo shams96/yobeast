@@ -1,4 +1,4 @@
-# Campus Verification Audit & Implementation Plan
+# MVP Campus Verification Audit & Implementation Plan
 
 ## 🚨 Current Security Gaps
 

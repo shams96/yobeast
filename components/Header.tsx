@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useCurrentUser } from '@/lib/hooks/useCurrentUser';
 import { useCurrentBeastWeek } from '@/lib/hooks/useCurrentBeastWeek';
-import { SignInButton } from '@clerk/nextjs';
 
 export default function Header() {
   const { user, loading: userLoading, isSignedIn } = useCurrentUser();
@@ -32,14 +31,14 @@ export default function Header() {
         {/* Right Section: Create + Points + Avatar OR Sign In */}
         <div className="flex items-center gap-3" role="toolbar" aria-label="User actions">
           {!isSignedIn ? (
-            <SignInButton mode="modal">
+            <Link href="/sign-in">
               <button
                 type="button"
                 className="px-4 py-2 rounded-full bg-future-dusk hover:bg-future-dusk/90 border border-future-dusk/30 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-future-dusk text-sm font-semibold text-ash shadow-button"
               >
                 Sign In
               </button>
-            </SignInButton>
+            </Link>
           ) : userLoading || !user ? (
             <div className="flex items-center gap-3">
               <div className="w-16 h-8 bg-carbon animate-pulse rounded-full" />
