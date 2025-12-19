@@ -14,10 +14,37 @@ export function useMoments(userId?: string) {
   useEffect(() => {
     setLoading(true);
 
-    // Use mock data if Firebase not configured
+    // Use mock data + localStorage if Firebase not configured
     if (!isFirebaseConfigured()) {
       setError(new Error('Firebase not configured'));
-      setMoments(MOCK_MOMENTS);
+
+      // Load moments from localStorage
+      try {
+        const momentsStr = localStorage.getItem('yollr_moments');
+        const localMoments = momentsStr ? JSON.parse(momentsStr) : [];
+
+        // Convert ISO strings back to Date objects
+        const parsedLocalMoments = localMoments.map((m: any) => ({
+          ...m,
+          createdAt: new Date(m.createdAt),
+          expiresAt: new Date(m.expiresAt),
+        }));
+
+        // Filter out expired moments
+        const now = new Date();
+        const validMoments = parsedLocalMoments.filter((m: any) => new Date(m.expiresAt) > now);
+
+        // Combine with mock data and sort by createdAt
+        const allMoments = [...validMoments, ...MOCK_MOMENTS].sort((a, b) =>
+          b.createdAt.getTime() - a.createdAt.getTime()
+        );
+
+        setMoments(allMoments);
+      } catch (err) {
+        console.error('Error loading moments from localStorage:', err);
+        setMoments(MOCK_MOMENTS);
+      }
+
       setLoading(false);
       return;
     }
