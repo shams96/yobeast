@@ -1,20 +1,28 @@
 'use client';
 
-import { SignIn } from '@clerk/nextjs';
+import { SignIn, useAuth } from '@clerk/nextjs';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SignInPage() {
+  const { isSignedIn } = useAuth();
+  const router = useRouter();
+
   useEffect(() => {
-    // Bypass email verification for demo accounts
+    // If user is signed in, immediately redirect
+    if (isSignedIn) {
+      router.push('/');
+      return;
+    }
+
+    // Bypass email verification screen for demo accounts
     const observer = new MutationObserver(() => {
-      // Auto-click continue if verification screen appears
-      const continueBtn = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-      if (continueBtn && continueBtn.textContent?.includes('Continue')) {
-        const emailInput = document.querySelector('input[name="code"]');
-        if (emailInput) {
-          // Verification screen detected - force redirect
-          window.location.href = '/';
-        }
+      const verificationScreen = document.querySelector('[data-localization-key*="verifyEmail"]') ||
+                                 document.querySelector('input[name="code"]');
+
+      if (verificationScreen) {
+        // Force redirect if verification screen appears
+        router.push('/');
       }
     });
 
@@ -24,7 +32,7 @@ export default function SignInPage() {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [isSignedIn, router]);
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-nightfall flex items-center justify-center p-4">

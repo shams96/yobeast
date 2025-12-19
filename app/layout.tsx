@@ -118,6 +118,8 @@ export default function RootLayout({
       signInFallbackRedirectUrl="/"
       signUpFallbackRedirectUrl="/onboarding"
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      afterSignInUrl="/"
+      afterSignUpUrl="/onboarding"
     >
       <html lang="en" className={inter.variable}>
         <head>
