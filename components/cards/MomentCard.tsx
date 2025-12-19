@@ -66,9 +66,10 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
             <div className="absolute inset-0 skeleton" />
           )}
 
-          {moment.imageUrl && (
+          {/* Support both old format (imageUrl/videoUrl) and new format (mediaUrl/mediaType) */}
+          {(moment.imageUrl || ((moment as any).mediaUrl && (moment as any).mediaType === 'image')) && (
             <img
-              src={moment.imageUrl}
+              src={moment.imageUrl || (moment as any).mediaUrl}
               alt={moment.caption}
               className={`
                 w-full h-full object-cover
@@ -79,9 +80,9 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
             />
           )}
 
-          {moment.videoUrl && (
+          {(moment.videoUrl || ((moment as any).mediaUrl && (moment as any).mediaType === 'video')) && (
             <video
-              src={moment.videoUrl}
+              src={moment.videoUrl || (moment as any).mediaUrl}
               className="w-full h-full object-cover"
               autoPlay
               loop
