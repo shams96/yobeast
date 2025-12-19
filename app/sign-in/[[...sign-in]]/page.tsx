@@ -22,7 +22,7 @@ export default function SignInPage() {
       const result = await signIn(email, password);
 
       if (result.success) {
-        router.push('/feed');
+        router.push('/');
       } else {
         setError(result.error || 'Sign in failed');
       }

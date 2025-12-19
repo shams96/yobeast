@@ -107,8 +107,8 @@ function OnboardingContent() {
       // Clear localStorage
       localStorage.removeItem('selectedInstitution');
 
-      // Redirect to feed
-      router.push('/feed');
+      // Redirect to home (feed)
+      router.push('/');
     } catch (err) {
       console.error('Error completing onboarding:', err);
       setError('Failed to complete onboarding. Please try again.');
