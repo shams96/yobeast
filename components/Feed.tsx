@@ -1,9 +1,11 @@
 'use client';
 
-import { BeastWeek, Poll, Moment } from '@/types';
+import { BeastWeek, Poll, Moment, CampusStats } from '@/types';
 import BeastCard from './cards/BeastCard';
 import PollCard from './cards/PollCard';
 import MomentCard from './cards/MomentCard';
+import RivalryDashboard from './cards/RivalryDashboard';
+import { MentalHealthBanner, FirstTimeEncouragement } from './inclusion/InclusionFeatures';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -11,9 +13,21 @@ interface FeedProps {
   beastWeek: BeastWeek;
   polls: Poll[];
   moments: Moment[];
+  campusStats?: Record<string, CampusStats>;
+  userCampusId?: string;
+  isFirstTimeSubmitter?: boolean;
+  userName?: string;
 }
 
-export default function Feed({ beastWeek, polls, moments }: FeedProps) {
+export default function Feed({
+  beastWeek,
+  polls,
+  moments,
+  campusStats,
+  userCampusId,
+  isFirstTimeSubmitter = false,
+  userName
+}: FeedProps) {
   const [pollVotes, setPollVotes] = useState<Record<string, string>>({});
 
   const handleBeastAction = () => {
@@ -37,6 +51,24 @@ export default function Feed({ beastWeek, polls, moments }: FeedProps) {
         {/* Top Pinned: Beast Card */}
         <div className="sticky top-[72px] z-40 bg-nightfall/95 backdrop-blur-lg pb-2">
           <BeastCard beastWeek={beastWeek} onAction={handleBeastAction} />
+        </div>
+
+        {/* Campus Rivalry Dashboard */}
+        {campusStats && userCampusId && (
+          <RivalryDashboard campusStats={campusStats} userCampusId={userCampusId} />
+        )}
+
+        {/* Inclusion Features */}
+        <div className="space-y-4 px-4">
+          {/* First-Time Encouragement - show during submission phase */}
+          {isFirstTimeSubmitter && beastWeek.phase === 'SUBMISSIONS_OPEN' && (
+            <FirstTimeEncouragement userName={userName} />
+          )}
+
+          {/* Mental Health Resources - show during high-stress phases */}
+          {(beastWeek.phase === 'VOTING_OPEN' || beastWeek.phase === 'FINALE_DAY') && (
+            <MentalHealthBanner />
+          )}
         </div>
 
         {/* Interleaved Content: Polls > Beast Moments > Moments */}
