@@ -7,13 +7,18 @@ export default function SignInPage() {
     <div className="min-h-[calc(100vh-4rem)] bg-nightfall flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <style jsx global>{`
-          /* Aggressively hide all OAuth/social buttons */
+          /* Aggressively hide all OAuth/social buttons and verification screens */
           .cl-socialButtonsBlockButton,
           .cl-socialButtonsBlockButton__google,
           [data-provider="google"],
           button[data-provider],
           .cl-socialButtons,
-          .cl-dividerRow {
+          .cl-dividerRow,
+          /* Hide OTP/verification code screens */
+          .cl-formFieldInput__emailCode,
+          .cl-formFieldInput__phoneCode,
+          .cl-verificationCode,
+          .cl-otpCodeFieldInputs {
             display: none !important;
             visibility: hidden !important;
             height: 0 !important;
@@ -37,23 +42,25 @@ export default function SignInPage() {
               card: 'bg-carbon border-steel/20 shadow-elevated',
               headerTitle: 'text-ash',
               headerSubtitle: 'text-steel',
-              socialButtonsBlockButton: 'display: none !important',
-              socialButtonsBlockButtonText: 'display: none !important',
-              socialButtonsIconButton: 'display: none !important',
-              dividerRow: 'display: none !important',
+              socialButtonsBlockButton: 'hidden',
+              socialButtonsBlockButtonText: 'hidden',
+              socialButtonsIconButton: 'hidden',
+              dividerRow: 'hidden',
               formButtonPrimary: 'bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall hover:opacity-90 font-semibold',
               formFieldInput: 'bg-nightfall border-steel/20 text-ash focus:border-digital-grape',
               formFieldLabel: 'text-ash',
               footerActionLink: 'text-digital-grape hover:text-signal-lime',
-              identityPreviewText: 'text-ash',
-              identityPreviewEditButton: 'text-digital-grape',
-              formResendCodeLink: 'text-digital-grape hover:text-signal-lime',
-              otpCodeFieldInput: 'bg-nightfall border-steel/20 text-ash',
+              identityPreviewText: 'hidden',
+              identityPreviewEditButton: 'hidden',
+              formResendCodeLink: 'hidden',
+              otpCodeFieldInput: 'hidden',
+              identityPreview: 'hidden',
+              alternativeMethodsBlockButton: 'hidden',
             },
           }}
           signUpUrl="/sign-up"
-          redirectUrl="/"
-          afterSignInUrl="/"
+          routing="path"
+          path="/sign-in"
         />
       </div>
     </div>

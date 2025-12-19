@@ -115,6 +115,9 @@ export default function RootLayout({
           colorInputText: '#F5F5F7',
         },
       }}
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/onboarding"
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     >
       <html lang="en" className={inter.variable}>
         <head>
