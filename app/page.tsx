@@ -6,11 +6,11 @@ import { useCurrentBeastWeek } from '@/lib/hooks/useCurrentBeastWeek';
 import { usePolls } from '@/lib/hooks/usePolls';
 import { useMoments } from '@/lib/hooks/useMoments';
 import { FeedSkeleton } from '@/components/SkeletonLoader';
-import { MOCK_BEAST_WEEK } from '@/lib/mockData';
+import { MOCK_BEAST_WEEK, MOCK_CAMPUS_STATS } from '@/lib/mockData';
 import Link from 'next/link';
 
 export default function HomePage() {
-  const { isSignedIn, loading } = useCurrentUser();
+  const { isSignedIn, loading, user } = useCurrentUser();
   const { beastWeek: fetchedBeastWeek, loading: beastLoading, error: beastError } = useCurrentBeastWeek();
   const { polls, loading: pollsLoading } = usePolls(fetchedBeastWeek?.id);
   const { moments, loading: momentsLoading } = useMoments();
@@ -112,12 +112,31 @@ export default function HomePage() {
     );
   }
 
+  // Map user campus to campus ID for rivalry stats
+  const getCampusId = (campusName: string): string => {
+    const campusMap: Record<string, string> = {
+      'Harvard University': 'harvard',
+      'Massachusetts Institute of Technology': 'mit',
+      'MIT': 'mit',
+      'Stanford University': 'stanford',
+      'UC Berkeley': 'berkeley',
+      'Yale University': 'yale',
+    };
+    return campusMap[campusName] || 'harvard'; // Default to harvard
+  };
+
+  const userCampusId = user?.campus ? getCampusId(user.campus) : undefined;
+
   return (
     <div className="min-h-screen">
       <Feed
         beastWeek={beastWeek}
         polls={polls}
         moments={moments}
+        campusStats={MOCK_CAMPUS_STATS}
+        userCampusId={userCampusId}
+        isFirstTimeSubmitter={user?.isFirstTimeSubmitter ?? true}
+        userName={user?.name}
       />
     </div>
   );
