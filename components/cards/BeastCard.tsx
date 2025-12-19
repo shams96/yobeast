@@ -252,30 +252,71 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
             {beastWeek.description}
           </motion.p>
 
-          {/* Metadata Bar - Clean chips */}
+          {/* Prize Display - Shows combined value and sponsor */}
           <motion.div
-            className="flex items-center gap-2 flex-wrap"
+            className="space-y-3"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
           >
-            <div className="px-3 py-1.5 rounded-full bg-nightfall/40 border border-ash/20 flex items-center gap-1.5">
-              <span className="text-sm">💰</span>
-              <span className="text-sm font-bold text-ash">
-                ${beastWeek.prize.amount}
-              </span>
+            {/* Total Prize Value */}
+            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-nightfall/40 border border-signal-lime/30">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🏆</span>
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-ash/80 uppercase tracking-wide">
+                    Total Prize Value
+                  </span>
+                  <span className="text-lg font-black text-signal-lime">
+                    ${beastWeek.prize.combinedValue}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-ash/70">Cash Prize</div>
+                <div className="text-sm font-bold text-ash">${beastWeek.prize.cashAmount}</div>
+              </div>
             </div>
-            <div className="px-3 py-1.5 rounded-full bg-nightfall/40 border border-ash/20 flex items-center gap-1.5">
-              <span className="text-sm">⏱️</span>
-              <span className="text-sm font-semibold text-ash/90">
-                {beastWeek.maxDuration}s
-              </span>
-            </div>
-            <div className="px-3 py-1.5 rounded-full bg-nightfall/40 border border-ash/20 flex items-center gap-1.5">
-              <span className="text-sm">🏆</span>
-              <span className="text-sm font-semibold text-ash/90">
-                Weekly Beast
-              </span>
+
+            {/* Sponsor Display */}
+            {beastWeek.prize.sponsors && beastWeek.prize.sponsors.length > 0 && (
+              <div className="px-4 py-3 rounded-xl bg-electric-coral/10 border border-electric-coral/30">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-white/90 flex items-center justify-center overflow-hidden">
+                    <span className="text-2xl">🍪</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-electric-coral uppercase tracking-wide mb-0.5">
+                      Bonus Prize Sponsor
+                    </div>
+                    <div className="text-sm font-bold text-ash mb-1">
+                      {beastWeek.prize.sponsors[0].businessName}
+                    </div>
+                    <div className="text-xs text-ash/80 leading-relaxed">
+                      {beastWeek.prize.sponsors[0].prizeDescription}
+                    </div>
+                    <div className="text-xs text-ash/60 mt-1">
+                      Value: ${beastWeek.prize.sponsors[0].estimatedValue}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Metadata Chips */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="px-3 py-1.5 rounded-full bg-nightfall/40 border border-ash/20 flex items-center gap-1.5">
+                <span className="text-sm">⏱️</span>
+                <span className="text-sm font-semibold text-ash/90">
+                  {beastWeek.maxDuration}s max
+                </span>
+              </div>
+              <div className="px-3 py-1.5 rounded-full bg-nightfall/40 border border-ash/20 flex items-center gap-1.5">
+                <span className="text-sm">📅</span>
+                <span className="text-sm font-semibold text-ash/90">
+                  Weekly
+                </span>
+              </div>
             </div>
           </motion.div>
 
