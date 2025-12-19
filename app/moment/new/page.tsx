@@ -29,57 +29,118 @@ export default function NewMomentPage() {
     };
   }, [mediaPreviewUrl]);
 
-  const handleCameraCapture = async (mode: CaptureMode) => {
+  const handleVideoRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
-        audio: mode === 'video',
+        audio: true,
       });
 
-      if (mode === 'photo') {
-        // Capture photo
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        video.playsInline = true;
-        video.muted = true;
+      // Create video element for preview
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.playsInline = true;
+      video.muted = true;
+      await video.play();
 
-        await video.play();
+      // Set up MediaRecorder
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm;codecs=vp9',
+      });
 
-        // Wait for video to be ready
-        await new Promise<void>((resolve) => {
-          if (video.readyState >= video.HAVE_ENOUGH_DATA) {
-            resolve();
-          } else {
-            video.onloadeddata = () => resolve();
-          }
-        });
-
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) {
-          throw new Error('Failed to get canvas context');
+      const chunks: Blob[] = [];
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
         }
+      };
 
-        ctx.drawImage(video, 0, 0);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const file = new File([blob], `beast-${Date.now()}.webm`, { type: 'video/webm' });
+        const url = URL.createObjectURL(file);
+        setMediaFile(file);
+        setMediaPreviewUrl(url);
+        stream.getTracks().forEach(track => track.stop());
+      };
 
-        // Convert to blob
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const file = new File([blob], `moment-${Date.now()}.jpg`, { type: 'image/jpeg' });
-            const url = URL.createObjectURL(file);
-            setMediaFile(file);
-            setMediaPreviewUrl(url);
-          }
-          // Clean up stream
-          stream.getTracks().forEach((track) => track.stop());
-        }, 'image/jpeg', 0.95);
+      // Start recording
+      mediaRecorder.start();
+
+      // Stop after 30 seconds (Beast Week max duration)
+      setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        }
+      }, 30000);
+
+      // Allow manual stop before 30 seconds
+      alert('Recording started! Will auto-stop after 30 seconds. Click OK to stop early.');
+      if (mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
       }
     } catch (error) {
+      console.error('Video recording error:', error);
+      alert(`Camera error: ${error instanceof Error ? error.message : 'Permission denied. Please allow camera access.'}`);
+      // Fallback to file input
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleCameraCapture = async (mode: CaptureMode) => {
+    if (mode === 'video') {
+      await handleVideoRecording();
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
+        audio: false,
+      });
+
+      // Capture photo
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.playsInline = true;
+      video.muted = true;
+
+      await video.play();
+
+      // Wait for video to be ready
+      await new Promise<void>((resolve) => {
+        if (video.readyState >= video.HAVE_ENOUGH_DATA) {
+          resolve();
+        } else {
+          video.onloadeddata = () => resolve();
+        }
+      });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        throw new Error('Failed to get canvas context');
+      }
+
+      ctx.drawImage(video, 0, 0);
+
+      // Convert to blob
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], `moment-${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const url = URL.createObjectURL(file);
+          setMediaFile(file);
+          setMediaPreviewUrl(url);
+        }
+        // Clean up stream
+        stream.getTracks().forEach((track) => track.stop());
+      }, 'image/jpeg', 0.95);
+    } catch (error) {
       console.error('Camera capture error:', error);
-      alert(`Camera error: ${error instanceof Error ? error.message : 'Permission denied'}`);
+      alert(`Camera error: ${error instanceof Error ? error.message : 'Permission denied. Please allow camera access.'}`);
       // Fallback to file input
       fileInputRef.current?.click();
     }
@@ -96,20 +157,64 @@ export default function NewMomentPage() {
   const handlePost = async () => {
     if (!mediaFile) return;
 
-    // In production, this would upload to backend
-    console.log('Posting Moment:', {
-      mediaFile,
-      caption,
-      isBeastMoment: momentType === 'beast_moment',
-      allowInBeastReel: momentType === 'beast_moment' && allowInBeastReel,
-      beastWeekId: momentType === 'beast_moment' ? beastWeek.id : undefined,
-    });
+    try {
+      // Convert file to base64 for localStorage
+      const reader = new FileReader();
+      reader.readAsDataURL(mediaFile);
 
-    // Simulate upload
-    await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+      });
 
-    // Navigate back to feed
-    router.push('/');
+      const mediaDataUrl = reader.result as string;
+
+      // Get current user from localStorage
+      const userStr = localStorage.getItem('yollr_user');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      // Create moment object
+      const newMoment = {
+        id: `moment_${Date.now()}`,
+        userId: user?.id || 'demo_user_001',
+        caption,
+        mediaUrl: mediaDataUrl,
+        mediaType: mediaFile.type.startsWith('image/') ? 'image' : 'video',
+        isBeastMoment: momentType === 'beast_moment',
+        beastWeekId: momentType === 'beast_moment' ? beastWeek.id : undefined,
+        allowInBeastReel: momentType === 'beast_moment' && allowInBeastReel,
+        reactionsCount: 0,
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        user: user || {
+          id: 'demo_user_001',
+          name: 'Demo Student',
+          username: 'demo_student',
+          campus: 'Demo University',
+        }
+      };
+
+      // Get existing moments from localStorage
+      const momentsStr = localStorage.getItem('yollr_moments');
+      const moments = momentsStr ? JSON.parse(momentsStr) : [];
+
+      // Add new moment to the beginning
+      moments.unshift(newMoment);
+
+      // Save back to localStorage
+      localStorage.setItem('yollr_moments', JSON.stringify(moments));
+
+      console.log('✅ Moment posted successfully!', newMoment);
+
+      // Show success message
+      alert('🎉 Your moment has been posted!');
+
+      // Navigate back to feed
+      router.push('/');
+    } catch (error) {
+      console.error('Failed to post moment:', error);
+      alert('❌ Failed to post moment. Please try again.');
+    }
   };
 
   const isImage = mediaFile?.type.startsWith('image/');
@@ -204,10 +309,7 @@ export default function NewMomentPage() {
               </button>
 
               <button
-                onClick={() => {
-                  setCaptureMode('video');
-                  fileInputRef.current?.click();
-                }}
+                onClick={() => handleCameraCapture('video')}
                 className="aspect-[4/5] rounded-2xl bg-gradient-to-br from-accent-fire to-brand-pink hover:scale-[1.02] active:scale-95 transition-all flex flex-col items-center justify-center gap-3"
               >
                 <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
