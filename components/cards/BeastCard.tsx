@@ -260,32 +260,32 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
                 const taskConfig = {
                   BEAST_REVEAL: {
                     task: 'Watch this week\'s challenge',
-                    detail: null,
-                    where: 'Go to Beast page',
+                    detail: 'Learn the theme and rules',
+                    where: 'Tap "See How It Works" below',
                     url: '/beast',
                   },
                   SUBMISSIONS_OPEN: {
-                    task: 'Submit your Beast clip',
+                    task: 'Record & submit your 30s clip',
                     detail: countdown && step.isActive ? `⏰ Closes in ${countdown}` : 'Deadline: Wed 11:59 PM',
-                    where: 'Submit on Beast page',
+                    where: 'Tap "Submit Your Beast Clip" below',
                     url: '/beast/submit',
                   },
                   VOTING_OPEN: {
-                    task: 'Vote for your favorite',
+                    task: 'Vote for the best clip',
                     detail: countdown && step.isActive ? `⏰ Closes in ${countdown}` : 'Help choose the champion',
-                    where: 'Vote on Beast page',
+                    where: 'Tap "Vote in Yollr Beast" below',
                     url: '/beast/vote',
                   },
                   FINALE_DAY: {
-                    task: 'Watch live finale',
+                    task: 'Join the live watch party',
                     detail: '🎪 6:00 PM ET - Winner revealed',
-                    where: 'Join finale page',
+                    where: 'Tap "Enter Beast Finale" below',
                     url: '/beast/finale',
                   },
                   COOLDOWN_REEL: {
-                    task: 'Watch Beast Reel highlights',
-                    detail: 'Relive the best moments',
-                    where: 'View reel page',
+                    task: 'Watch the highlight reel',
+                    detail: 'See the week\'s best moments',
+                    where: 'Tap "Watch Beast Reel" below',
                     url: '/beast/reel',
                   },
                 };
