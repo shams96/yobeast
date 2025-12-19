@@ -242,6 +242,114 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
             )}
           </motion.div>
 
+          {/* Daily Task Breakdown */}
+          <motion.div
+            className="space-y-2 pt-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            {/* Section Header */}
+            <div className="flex items-center gap-2 pb-1">
+              <span className="text-xs font-bold text-ash uppercase tracking-wide">📅 Your Weekly Checklist</span>
+            </div>
+
+            {/* Daily Tasks */}
+            <div className="space-y-1.5">
+              {timelineSteps.map((step) => {
+                const taskConfig = {
+                  BEAST_REVEAL: {
+                    task: 'Watch this week\'s challenge',
+                    detail: null,
+                  },
+                  SUBMISSIONS_OPEN: {
+                    task: 'Submit your Beast clip',
+                    detail: countdown && step.isActive ? `⏰ Closes in ${countdown}` : 'Deadline: Wed 11:59 PM',
+                  },
+                  VOTING_OPEN: {
+                    task: 'Vote for your favorite',
+                    detail: countdown && step.isActive ? `⏰ Closes in ${countdown}` : 'Help choose the champion',
+                  },
+                  FINALE_DAY: {
+                    task: 'Watch live finale',
+                    detail: '🎪 6:00 PM ET - Winner revealed',
+                  },
+                  COOLDOWN_REEL: {
+                    task: 'Watch Beast Reel highlights',
+                    detail: 'Relive the best moments',
+                  },
+                };
+
+                const config = taskConfig[step.phase];
+                const statusIcon = step.isComplete ? '✓' : step.isActive ? '→' : '○';
+
+                return (
+                  <motion.div
+                    key={step.phase}
+                    className={`
+                      flex items-start gap-2.5 px-3 py-2 rounded-lg
+                      border transition-all duration-300
+                      ${step.isActive
+                        ? 'bg-signal-lime/15 border-signal-lime/40'
+                        : step.isComplete
+                        ? 'bg-nightfall/20 border-steel/20 opacity-60'
+                        : 'bg-nightfall/20 border-steel/20'
+                      }
+                    `}
+                    animate={step.isActive ? { scale: [1, 1.01, 1] } : {}}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    {/* Status Icon */}
+                    <span className={`
+                      text-sm font-bold mt-0.5
+                      ${step.isActive ? 'text-signal-lime' : step.isComplete ? 'text-digital-grape' : 'text-steel/60'}
+                    `}>
+                      {statusIcon}
+                    </span>
+
+                    {/* Task Content */}
+                    <div className="flex-1 space-y-0.5">
+                      {/* Day Label */}
+                      <div className="flex items-center gap-2">
+                        <span className={`
+                          text-xs font-bold uppercase
+                          ${step.isActive ? 'text-ash' : step.isComplete ? 'text-steel' : 'text-steel/80'}
+                        `}>
+                          {step.day}
+                        </span>
+                        {step.isActive && (
+                          <motion.div
+                            className="w-1 h-1 rounded-full bg-signal-lime"
+                            animate={{ opacity: [1, 0.3, 1] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          />
+                        )}
+                      </div>
+
+                      {/* Task Description */}
+                      <p className={`
+                        text-sm font-semibold leading-tight
+                        ${step.isActive ? 'text-ash' : step.isComplete ? 'text-steel/70' : 'text-steel/80'}
+                      `}>
+                        {config.task}
+                      </p>
+
+                      {/* Additional Detail */}
+                      {config.detail && (
+                        <p className={`
+                          text-xs leading-tight
+                          ${step.isActive ? 'text-ash/80' : 'text-steel/60'}
+                        `}>
+                          {config.detail}
+                        </p>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+
           {/* Description */}
           <motion.p
             className="text-sm text-ash/95 leading-relaxed font-medium"
