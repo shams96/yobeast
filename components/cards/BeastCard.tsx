@@ -261,22 +261,32 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
                   BEAST_REVEAL: {
                     task: 'Watch this week\'s challenge',
                     detail: null,
+                    where: 'Go to Beast page',
+                    url: '/beast',
                   },
                   SUBMISSIONS_OPEN: {
                     task: 'Submit your Beast clip',
                     detail: countdown && step.isActive ? `⏰ Closes in ${countdown}` : 'Deadline: Wed 11:59 PM',
+                    where: 'Submit on Beast page',
+                    url: '/beast/submit',
                   },
                   VOTING_OPEN: {
                     task: 'Vote for your favorite',
                     detail: countdown && step.isActive ? `⏰ Closes in ${countdown}` : 'Help choose the champion',
+                    where: 'Vote on Beast page',
+                    url: '/beast/vote',
                   },
                   FINALE_DAY: {
                     task: 'Watch live finale',
                     detail: '🎪 6:00 PM ET - Winner revealed',
+                    where: 'Join finale page',
+                    url: '/beast/finale',
                   },
                   COOLDOWN_REEL: {
                     task: 'Watch Beast Reel highlights',
                     detail: 'Relive the best moments',
+                    where: 'View reel page',
+                    url: '/beast/reel',
                   },
                 };
 
@@ -284,67 +294,84 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
                 const statusIcon = step.isComplete ? '✓' : step.isActive ? '→' : '○';
 
                 return (
-                  <motion.div
+                  <Link
                     key={step.phase}
-                    className={`
-                      flex items-start gap-2.5 px-3 py-2 rounded-lg
-                      border transition-all duration-300
-                      ${step.isActive
-                        ? 'bg-signal-lime/15 border-signal-lime/40'
-                        : step.isComplete
-                        ? 'bg-nightfall/20 border-steel/20 opacity-60'
-                        : 'bg-nightfall/20 border-steel/20'
-                      }
-                    `}
-                    animate={step.isActive ? { scale: [1, 1.01, 1] } : {}}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    href={config.url}
+                    className="block"
                   >
-                    {/* Status Icon */}
-                    <span className={`
-                      text-sm font-bold mt-0.5
-                      ${step.isActive ? 'text-signal-lime' : step.isComplete ? 'text-digital-grape' : 'text-steel/60'}
-                    `}>
-                      {statusIcon}
-                    </span>
-
-                    {/* Task Content */}
-                    <div className="flex-1 space-y-0.5">
-                      {/* Day Label */}
-                      <div className="flex items-center gap-2">
-                        <span className={`
-                          text-xs font-bold uppercase
-                          ${step.isActive ? 'text-ash' : step.isComplete ? 'text-steel' : 'text-steel/80'}
-                        `}>
-                          {step.day}
-                        </span>
-                        {step.isActive && (
-                          <motion.div
-                            className="w-1 h-1 rounded-full bg-signal-lime"
-                            animate={{ opacity: [1, 0.3, 1] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          />
-                        )}
-                      </div>
-
-                      {/* Task Description */}
-                      <p className={`
-                        text-sm font-semibold leading-tight
-                        ${step.isActive ? 'text-ash' : step.isComplete ? 'text-steel/70' : 'text-steel/80'}
+                    <motion.div
+                      className={`
+                        flex items-start gap-2.5 px-3 py-2 rounded-lg
+                        border transition-all duration-300
+                        ${step.isActive
+                          ? 'bg-signal-lime/15 border-signal-lime/40 hover:bg-signal-lime/20'
+                          : step.isComplete
+                          ? 'bg-nightfall/20 border-steel/20 opacity-60 hover:opacity-70'
+                          : 'bg-nightfall/20 border-steel/20 hover:bg-nightfall/30'
+                        }
+                        cursor-pointer
+                      `}
+                      animate={step.isActive ? { scale: [1, 1.01, 1] } : {}}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                    >
+                      {/* Status Icon */}
+                      <span className={`
+                        text-sm font-bold mt-0.5
+                        ${step.isActive ? 'text-signal-lime' : step.isComplete ? 'text-digital-grape' : 'text-steel/60'}
                       `}>
-                        {config.task}
-                      </p>
+                        {statusIcon}
+                      </span>
 
-                      {/* Additional Detail */}
-                      {config.detail && (
+                      {/* Task Content */}
+                      <div className="flex-1 space-y-0.5">
+                        {/* Day Label */}
+                        <div className="flex items-center gap-2">
+                          <span className={`
+                            text-xs font-bold uppercase
+                            ${step.isActive ? 'text-ash' : step.isComplete ? 'text-steel' : 'text-steel/80'}
+                          `}>
+                            {step.day}
+                          </span>
+                          {step.isActive && (
+                            <motion.div
+                              className="w-1 h-1 rounded-full bg-signal-lime"
+                              animate={{ opacity: [1, 0.3, 1] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                            />
+                          )}
+                        </div>
+
+                        {/* Task Description */}
                         <p className={`
-                          text-xs leading-tight
-                          ${step.isActive ? 'text-ash/80' : 'text-steel/60'}
+                          text-sm font-semibold leading-tight
+                          ${step.isActive ? 'text-ash' : step.isComplete ? 'text-steel/70' : 'text-steel/80'}
                         `}>
-                          {config.detail}
+                          {config.task}
                         </p>
-                      )}
-                    </div>
-                  </motion.div>
+
+                        {/* Additional Detail */}
+                        {config.detail && (
+                          <p className={`
+                            text-xs leading-tight
+                            ${step.isActive ? 'text-ash/80' : 'text-steel/60'}
+                          `}>
+                            {config.detail}
+                          </p>
+                        )}
+
+                        {/* Where to go - Action location */}
+                        <p className={`
+                          text-xs font-semibold leading-tight flex items-center gap-1
+                          ${step.isActive ? 'text-signal-lime' : 'text-digital-grape/70'}
+                        `}>
+                          <span>→</span>
+                          <span>{config.where}</span>
+                        </p>
+                      </div>
+                    </motion.div>
+                  </Link>
                 );
               })}
             </div>
