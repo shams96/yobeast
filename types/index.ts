@@ -234,8 +234,33 @@ export interface PollVote {
   id: string;
   pollId: string;
   userId: string;
-  selectedOptionId: string;
+  selectedOptionId?: string;
+  votedForUserId?: string; // For Hype Polls (person-based voting)
   votedAt: Date;
+  isAnonymous?: boolean; // For anonymous voting
+}
+
+// Hype Polls (Gas/TBH-style positive anonymous polls)
+export interface HypePoll {
+  id: string;
+  question: string;
+  category: 'social' | 'personality' | 'campus_life' | 'style' | 'academic';
+  votesCount: number; // Using votesCount for consistency with other entities
+  totalVotes?: number; // Optional alias
+  createdAt: Date;
+  expiresAt: Date;
+}
+
+// Compliment Notifications (from Hype Poll votes)
+export interface ComplimentNotification {
+  id: string;
+  recipientId: string;
+  pollQuestion: string; // The poll question
+  question?: string; // Alias for pollQuestion
+  message?: string; // Formatted notification message
+  count: number;
+  isRead: boolean;
+  createdAt: Date;
 }
 
 export interface BeastReel {

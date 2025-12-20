@@ -233,6 +233,7 @@ export function HypePollsProvider({ children }: { children: ReactNode }) {
       // Create new notification
       const newNotif: ComplimentNotification = {
         id: `notif_${Date.now()}`,
+        recipientId: 'current_user', // TODO: Replace with real auth user ID
         message: `Someone voted for you! 🔥`,
         count: 1,
         pollQuestion: poll.question,
