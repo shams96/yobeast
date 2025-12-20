@@ -206,6 +206,9 @@ export interface Moment {
   createdAt: Date;
   expiresAt: Date;
   user?: User;
+
+  // BeReal mechanics
+  isLate?: boolean; // Posted outside 2-minute BeReal window
 }
 
 export interface Poll {
@@ -249,6 +252,16 @@ export interface Reaction {
   emoji: string;
   count: number;
   userReacted: boolean;
+}
+
+export interface RealMojiReaction {
+  id: string;
+  momentId: string;
+  userId: string;
+  userName: string;
+  emoji: string;
+  selfieDataUrl: string;
+  createdAt: Date;
 }
 
 // Feed Item Types

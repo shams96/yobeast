@@ -1,467 +1,122 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { MOCK_BEAST_WEEK } from '@/types';
-import Link from 'next/link';
+import { useState, useRef } from 'react';
+import { useBeastWeekCycle } from '@/context/BeastWeekCycleContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function BeastSubmitPage() {
-  const [step, setStep] = useState<'brief' | 'camera' | 'review'>('brief');
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string>('');
-  const [caption, setCaption] = useState('');
-  const [showUsername, setShowUsername] = useState(true);
-  const [agreedToRules, setAgreedToRules] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
   const router = useRouter();
-  const beastWeek = MOCK_BEAST_WEEK;
-  const maxDuration = beastWeek.maxDuration;
+  const { currentWeek, currentPhase, hasSubmitted, submitVideo } = useBeastWeekCycle();
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [caption, setCaption] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Start camera when entering camera step
-  useEffect(() => {
-    if (step === 'camera') {
-      startCamera();
-    } else {
-      stopCamera();
-    }
-    return () => stopCamera();
-  }, [step, facingMode]);
+  if (!currentWeek) {
+    return <div className="min-h-screen bg-nightfall flex items-center justify-center"><p className="text-steel">Loading...</p></div>;
+  }
 
-  // Timer for recording
-  useEffect(() => {
-    if (isRecording) {
-      timerRef.current = setInterval(() => {
-        setRecordingTime((prev) => {
-          if (prev >= maxDuration - 1) {
-            stopRecording();
-            return maxDuration;
-          }
-          return prev + 1;
-        });
-      }, 1000);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      setRecordingTime(0);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isRecording, maxDuration]);
-
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode, width: { ideal: 1080 }, height: { ideal: 1920 } },
-        audio: true,
-      });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-      }
-    } catch (error) {
-      console.error('Camera access error:', error);
-      alert('Camera access denied. Please enable camera permissions.');
-    }
-  };
-
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-      setStream(null);
-    }
-    // Cleanup video ref
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  };
-
-  const startRecording = () => {
-    if (!stream) return;
-
-    chunksRef.current = [];
-
-    // Check for supported mime types
-    let mimeType = 'video/webm;codecs=vp9';
-    if (!MediaRecorder.isTypeSupported(mimeType)) {
-      mimeType = 'video/webm;codecs=vp8';
-    }
-    if (!MediaRecorder.isTypeSupported(mimeType)) {
-      mimeType = 'video/webm';
-    }
-
-    const mediaRecorder = new MediaRecorder(stream, { mimeType });
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        chunksRef.current.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: mimeType });
-      const file = new File([blob], `beast-${Date.now()}.webm`, { type: mimeType });
-
-      // Clean up old preview URL
-      if (videoPreviewUrl) {
-        URL.revokeObjectURL(videoPreviewUrl);
-      }
-
-      setVideoFile(file);
-      setVideoPreviewUrl(URL.createObjectURL(file));
-      setIsRecording(false);
-      setStep('review');
-    };
-
-    mediaRecorder.onerror = (event) => {
-      console.error('MediaRecorder error:', event);
-      alert('Recording failed. Please try again.');
-      setIsRecording(false);
-    };
-
-    mediaRecorderRef.current = mediaRecorder;
-
-    try {
-      mediaRecorder.start(1000); // Collect data every second
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Start recording error:', error);
-      alert('Failed to start recording. Please try again.');
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-    }
-  };
-
-  const toggleCamera = () => {
-    setFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
-  };
-
-  const handleSubmit = async () => {
-    if (!agreedToRules || !videoFile) return;
-
-    // In production, this would upload to backend
-    console.log('Submitting Beast Clip:', {
-      videoFile,
-      caption,
-      showUsername,
-      beastWeekId: beastWeek.id,
-    });
-
-    // Simulate upload
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Navigate to success
-    router.push('/beast/submit/success');
-  };
-
-  // Step 1: Brief Screen
-  if (step === 'brief') {
+  if (currentPhase !== 'SUBMISSIONS_OPEN') {
     return (
-      <div className="min-h-screen pb-20">
-        {/* Hero Section - Solid Electric Coral */}
-        <div className="relative overflow-hidden bg-electric-coral border-b-2 border-electric-coral/30">
-          <div className="px-6 pt-8 pb-12 space-y-6">
-            {/* Back Button */}
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              <span className="text-sm font-medium">Back</span>
-            </Link>
-
-            {/* Title */}
-            <div className="space-y-3">
-              <span className="text-4xl">🎬</span>
-              <h1 className="text-4xl font-bold text-white leading-tight">
-                Record Your Beast Clip
-              </h1>
-              <p className="text-lg text-white/90">
-                {beastWeek.title}
-              </p>
-            </div>
-          </div>
+      <div className="min-h-screen bg-nightfall px-4 py-8">
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="text-6xl">🔒</div>
+          <h1 className="text-2xl font-black text-ash">Submissions Closed</h1>
+          <p className="text-steel">Submissions are only open Tuesday-Wednesday.</p>
+          <Link href="/"><button className="px-6 py-3 rounded-xl bg-digital-grape text-ash font-bold hover:scale-105 transition-transform">Back to Feed</button></Link>
         </div>
+      </div>
+    );
+  }
 
-        {/* Instructions */}
-        <div className="px-6 py-8 space-y-6">
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-ash">
-              Quick Tips
-            </h2>
+  if (hasSubmitted) {
+    return (
+      <div className="min-h-screen bg-nightfall px-4 py-8">
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="text-6xl">✅</div>
+          <h1 className="text-2xl font-black text-ash">Submitted!</h1>
+          <p className="text-steel">Voting opens Thursday!</p>
+          <Link href="/"><button className="px-6 py-3 rounded-xl bg-signal-lime text-nightfall font-bold hover:scale-105 transition-transform">Back to Feed</button></Link>
+        </div>
+      </div>
+    );
+  }
 
-            {[
-              `Keep it under ${maxDuration} seconds`,
-              'Make it campus-appropriate',
-              'Original content only (no reposts)',
-              'Film in good lighting',
-              'Have fun and be creative!',
-            ].map((tip, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-electric-coral/20 flex items-center justify-center mt-0.5 border border-electric-coral/30">
-                  <span className="text-xs text-electric-coral font-bold">{index + 1}</span>
-                </div>
-                <p className="text-sm text-steel flex-1">
-                  {tip}
-                </p>
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file?.type.startsWith('video/')) return alert('Please select a video file');
+    if (file.size > 100 * 1024 * 1024) return alert('Video too large (max 100MB)');
+    setVideoFile(file);
+    setVideoPreview(URL.createObjectURL(file));
+  };
+
+  const handleSubmit = () => {
+    if (!videoFile || !caption.trim()) return alert('Please add video and caption');
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      submitVideo({ videoUrl: reader.result as string, caption: caption.trim(), duration: 30 });
+      router.push('/');
+    };
+    reader.readAsDataURL(videoFile);
+  };
+
+  return (
+    <div className="min-h-screen bg-nightfall pb-20">
+      <div className="sticky top-0 z-10 bg-nightfall/95 backdrop-blur-lg border-b border-steel/20">
+        <div className="flex items-center justify-between px-4 py-4">
+          <Link href="/" className="text-steel hover:text-ash transition-colors">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </Link>
+          <h1 className="text-xl font-black text-ash">Submit Beast Video</h1>
+          <button onClick={handleSubmit} disabled={!videoFile || !caption.trim()} className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${videoFile && caption.trim() ? 'bg-signal-lime text-nightfall hover:scale-105' : 'bg-carbon/50 text-steel/50 cursor-not-allowed'}`}>Submit</button>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <div className="bg-gradient-to-br from-digital-grape/20 to-brand-mocha/20 border border-digital-grape/40 rounded-2xl p-6">
+          <div className="flex items-start gap-3">
+            <span className="text-3xl">🎬</span>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-ash mb-1">{currentWeek.title}</h2>
+              <p className="text-sm text-steel mb-3">{currentWeek.description}</p>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-bold text-signal-lime">PRIZE:</span>
+                <span className="text-sm font-bold text-ash">{currentWeek.prize.displayString}</span>
               </div>
-            ))}
-          </div>
-
-          {/* Rules Reminder */}
-          <div className="bg-carbon border border-steel/10 shadow-card p-4 rounded-2xl space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">⚠️</span>
-              <h3 className="text-sm font-semibold text-ash">
-                Remember the Rules
-              </h3>
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-steel">Rules:</p>
+                {currentWeek.rules.map((rule, i) => (<p key={i} className="text-xs text-steel/70">• {rule}</p>))}
+              </div>
             </div>
-            <p className="text-xs text-steel leading-relaxed">
-              Your submission must follow campus community guidelines. Inappropriate content will be removed.
-            </p>
           </div>
         </div>
 
-        {/* CTAs */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-carbon border-t border-steel/10 safe-bottom">
-          <div className="max-w-2xl mx-auto">
-            <button
-              onClick={() => setStep('camera')}
-              className="btn-primary w-full"
-            >
-              Open Camera
+        {!videoPreview ? (
+          <div>
+            <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
+            <button onClick={() => fileInputRef.current?.click()} className="w-full bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall font-bold text-lg px-8 py-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-3">
+              <span className="text-2xl">📂</span><span>Select Video</span>
             </button>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Step 2: Camera/Recording Screen
-  if (step === 'camera') {
-    return (
-      <div className="min-h-screen bg-black flex flex-col relative">
-        {/* Header */}
-        <div className="absolute top-0 left-0 right-0 p-4 safe-top z-10 flex items-center justify-between">
-          <button
-            onClick={() => setStep('brief')}
-            className="w-10 h-10 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-
-          {isRecording ? (
-            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-sm font-semibold text-white">
-                {recordingTime}s / {maxDuration}s
-              </span>
+        ) : (
+          <div className="space-y-4">
+            <div className="relative aspect-[9/16] rounded-2xl overflow-hidden bg-carbon">
+              <video src={videoPreview} controls className="w-full h-full object-cover" />
             </div>
-          ) : (
-            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full">
-              <span className="text-sm font-semibold text-white">
-                🎬 Beast Clip — {maxDuration}s max
-              </span>
-            </div>
-          )}
-
-          <button
-            onClick={toggleCamera}
-            className="w-10 h-10 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
-            disabled={isRecording}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Camera Preview */}
-        <div className="flex-1 w-full relative overflow-hidden">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Recording Controls */}
-        <div className="absolute bottom-0 left-0 right-0 p-8 safe-bottom">
-          <div className="flex items-center justify-center gap-8">
-            {!isRecording ? (
-              <button
-                onClick={startRecording}
-                className="w-20 h-20 rounded-full bg-electric-coral flex items-center justify-center shadow-elevated active:scale-90 transition-transform border-2 border-electric-coral/30"
-              >
-                <div className="w-16 h-16 rounded-full border-4 border-white" />
-              </button>
-            ) : (
-              <button
-                onClick={stopRecording}
-                className="w-20 h-20 rounded-full bg-electric-coral flex items-center justify-center shadow-elevated active:scale-90 transition-transform border-2 border-electric-coral/30"
-              >
-                <div className="w-8 h-8 rounded bg-white" />
-              </button>
-            )}
+            <button onClick={() => { setVideoFile(null); setVideoPreview(null); }} className="w-full px-4 py-3 rounded-xl bg-carbon border border-steel/20 text-steel font-semibold hover:border-ash transition-colors">Change Video</button>
           </div>
+        )}
 
-          <p className="text-center text-white/70 text-xs mt-4">
-            {isRecording ? 'Tap to stop recording' : 'Tap to start recording'}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Step 3: Review Screen
-  return (
-    <div className="min-h-screen pb-32">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-carbon border-b border-steel/10 safe-top">
-        <div className="flex items-center justify-between px-4 py-3">
-          <button
-            onClick={() => {
-              setStep('camera');
-              setVideoFile(null);
-              setVideoPreviewUrl('');
-            }}
-            className="text-steel hover:text-ash transition-colors"
-          >
-            <span className="text-sm font-medium">Retake</span>
-          </button>
-
-          <h1 className="text-lg font-bold text-ash">
-            Review & Submit
-          </h1>
-
-          <div className="w-16" />
-        </div>
-      </div>
-
-      {/* Video Preview */}
-      <div className="px-6 pt-6 space-y-6">
-        <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden bg-carbon">
-          {videoPreviewUrl && (
-            <video
-              src={videoPreviewUrl}
-              className="w-full h-full object-cover"
-              controls
-              autoPlay
-              loop
-              muted
-              playsInline
-            />
-          )}
-        </div>
-
-        {/* Caption Input */}
-        <div className="space-y-2">
-          <label className="text-sm font-semibold text-ash">
-            Add a caption (optional)
-          </label>
-          <textarea
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder="Tell your campus what this is about..."
-            className="
-              w-full px-4 py-3 rounded-xl
-              bg-carbon text-ash
-              border border-steel/20 focus:border-electric-coral
-              placeholder:text-steel
-              resize-none h-24
-              transition-colors outline-none
-            "
-            maxLength={150}
-          />
-          <div className="flex justify-end">
-            <span className="text-xs text-steel">
-              {caption.length}/150
-            </span>
+        {videoPreview && (
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-ash">Caption</label>
+            <textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Describe your submission..." maxLength={200} className="w-full px-4 py-3 rounded-xl bg-carbon border border-steel/20 text-ash placeholder-steel/50 resize-none focus:border-signal-lime focus:outline-none transition-colors" rows={3} />
+            <p className="text-xs text-steel text-right">{caption.length}/200</p>
           </div>
-        </div>
-
-        {/* Username Toggle */}
-        <div className="flex items-center justify-between p-4 bg-carbon border border-steel/10 shadow-card rounded-xl">
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-ash">
-              Show username on winners list
-            </p>
-            <p className="text-xs text-steel mt-1">
-              Your clip will still be visible, but your name will be hidden
-            </p>
-          </div>
-          <button
-            onClick={() => setShowUsername(!showUsername)}
-            className={`
-              relative w-12 h-7 rounded-full transition-colors
-              ${showUsername ? 'bg-electric-coral' : 'bg-steel/30'}
-            `}
-          >
-            <div
-              className={`
-                absolute top-1 w-5 h-5 rounded-full bg-white shadow-md
-                transition-transform duration-200
-                ${showUsername ? 'translate-x-6' : 'translate-x-1'}
-              `}
-            />
-          </button>
-        </div>
-
-        {/* Rules Agreement */}
-        <div className="space-y-3">
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={agreedToRules}
-              onChange={(e) => setAgreedToRules(e.target.checked)}
-              className="mt-1 w-5 h-5 rounded border-2 border-steel/30 checked:bg-electric-coral checked:border-electric-coral cursor-pointer"
-            />
-            <div className="flex-1">
-              <p className="text-sm text-ash">
-                I understand this will be visible to my campus only and must follow community guidelines.
-              </p>
-            </div>
-          </label>
-
-          <div className="bg-carbon border border-steel/10 shadow-card p-3 rounded-xl">
-            <p className="text-xs text-steel leading-relaxed">
-              By submitting, you agree to the Beast Challenge rules and campus content policy.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom CTAs */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-carbon border-t border-steel/10 safe-bottom">
-        <div className="max-w-2xl mx-auto space-y-3">
-          <button
-            onClick={handleSubmit}
-            disabled={!agreedToRules}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Submit Beast Clip
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );

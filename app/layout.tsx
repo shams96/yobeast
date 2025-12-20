@@ -3,6 +3,9 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import ClientLayout from '@/components/ClientLayout';
 import { AuthProvider } from '@/context/AuthContext';
+import { RealsProvider } from '@/context/RealsContext';
+import { HypePollsProvider } from '@/context/HypePollsContext';
+import { BeastWeekCycleProvider } from '@/context/BeastWeekCycleContext';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -111,7 +114,13 @@ export default function RootLayout({
       </head>
       <body className="antialiased bg-nightfall text-ash min-h-screen">
         <AuthProvider>
-          <ClientLayout>{children}</ClientLayout>
+          <RealsProvider>
+            <HypePollsProvider>
+              <BeastWeekCycleProvider>
+                <ClientLayout>{children}</ClientLayout>
+              </BeastWeekCycleProvider>
+            </HypePollsProvider>
+          </RealsProvider>
         </AuthProvider>
       </body>
     </html>

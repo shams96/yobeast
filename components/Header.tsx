@@ -28,6 +28,20 @@ export default function Header() {
           </div>
         </Link>
 
+        {/* Middle Section: Hype Polls Link */}
+        {isSignedIn && (
+          <Link
+            href="/hype"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-digital-grape/20 to-brand-mocha/20 border border-digital-grape/40 hover:border-signal-lime transition-all hover:scale-105 active:scale-95"
+            aria-label="Hype Polls"
+          >
+            <span className="text-base" aria-hidden="true">💜</span>
+            <span className="text-xs font-semibold text-ash hidden sm:inline">
+              Hype Polls
+            </span>
+          </Link>
+        )}
+
         {/* Right Section: Create + Points + Avatar OR Sign In */}
         <div className="flex items-center gap-3" role="toolbar" aria-label="User actions">
           {!isSignedIn ? (

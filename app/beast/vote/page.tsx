@@ -1,47 +1,62 @@
 'use client';
 
-import { useState } from 'react';
-import { MOCK_FINALISTS } from '@/lib/mockBeastClips';
+import { useState, useEffect } from 'react';
+import { useBeastWeekCycle } from '@/context/BeastWeekCycleContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import EnhancedVideoPlayer from '@/components/EnhancedVideoPlayer';
 
 export default function BeastVotePage() {
+  const {
+    currentWeek,
+    currentPhase,
+    submissions,
+    leaderboard,
+    hasVoted,
+    voteForClip,
+    canVote,
+  } = useBeastWeekCycle();
+
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [votedClipId, setVotedClipId] = useState<string | null>(null);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
 
-  const router = useRouter();
-  const finalists = MOCK_FINALISTS;
-  const currentClip = finalists[currentIndex];
-  const hasVoted = votedClipId !== null;
+  const currentClip = submissions[currentIndex];
 
-  // Handle empty finalists state
-  if (finalists.length === 0) {
+  // Phase validation - only accessible during VOTING_OPEN or FINALE_DAY
+  if (!['VOTING_OPEN', 'FINALE_DAY'].includes(currentPhase)) {
     return (
-      <div className="fixed inset-0 bg-nightfall flex flex-col items-center justify-center p-6">
-        <Link
-          href="/"
-          className="absolute top-6 left-6 w-10 h-10 rounded-full bg-carbon border-2 border-steel/30 flex items-center justify-center text-ash hover:bg-carbon/80 transition-colors"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </Link>
-
-        <div className="max-w-md text-center space-y-6">
-          <div className="text-6xl mb-4">🎬</div>
-          <h1 className="text-2xl font-bold text-ash">
-            Voting Opens Soon!
-          </h1>
-          <p className="text-steel leading-relaxed">
-            Submissions are still open. Check back after the submission deadline to vote for your favorite Beast clips!
+      <div className="min-h-screen bg-nightfall px-4 py-8">
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="text-6xl">🔒</div>
+          <h1 className="text-2xl font-black text-ash">Voting Not Open</h1>
+          <p className="text-steel">
+            {currentPhase === 'SUBMISSIONS_OPEN'
+              ? 'Voting opens Thursday!'
+              : 'Check back during voting phase (Thursday-Saturday).'}
           </p>
-          <Link
-            href="/"
-            className="inline-block bg-digital-grape text-white font-semibold px-8 py-3 rounded-xl hover:bg-digital-grape/90 transition-colors"
-          >
-            Back to Feed
+          <Link href="/">
+            <button className="px-6 py-3 rounded-xl bg-digital-grape text-ash font-bold hover:scale-105 transition-transform">
+              Back to Feed
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // No submissions yet
+  if (submissions.length === 0) {
+    return (
+      <div className="min-h-screen bg-nightfall px-4 py-8">
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="text-6xl">📹</div>
+          <h1 className="text-2xl font-black text-ash">No Submissions Yet</h1>
+          <p className="text-steel">Check back later for videos to vote on!</p>
+          <Link href="/">
+            <button className="px-6 py-3 rounded-xl bg-digital-grape text-ash font-bold hover:scale-105 transition-transform">
+              Back to Feed
+            </button>
           </Link>
         </div>
       </div>
@@ -49,232 +64,240 @@ export default function BeastVotePage() {
   }
 
   const handleVote = (clipId: string) => {
-    if (hasVoted) return;
-
-    setVotedClipId(clipId);
-
-    // In production, submit vote to backend
-    console.log('Vote submitted for clip:', clipId);
-
-    // Show success message
-    setTimeout(() => {
-      router.push('/');
-    }, 2000);
-  };
-
-  const goToNext = () => {
-    if (currentIndex < finalists.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    if (!canVote) {
+      alert('You have already voted this week!');
+      return;
     }
+    voteForClip(clipId);
+    setVotedClipId(clipId);
   };
 
-  const goToPrevious = () => {
-    if (currentIndex > 0) {
+  const handleSwipe = (direction: 'up' | 'down') => {
+    if (direction === 'up' && currentIndex < submissions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else if (direction === 'down' && currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
   };
 
-  // Swipe handling
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe) {
-      goToNext();
-    }
-    if (isRightSwipe) {
-      goToPrevious();
-    }
-
-    setTouchStart(0);
-    setTouchEnd(0);
-  };
-
   return (
-    <div className="fixed inset-0 bg-black flex flex-col">
+    <div className="relative h-screen w-full bg-nightfall overflow-hidden">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 safe-top">
-        <div className="flex items-center justify-between p-4">
-          <Link
-            href="/"
-            className="w-10 h-10 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
-          >
+      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-nightfall/90 to-transparent px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="text-ash hover:text-steel transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-
-          {/* Progress Indicator */}
-          <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full">
-            <span className="text-sm font-semibold text-white">
-              Finalist {currentIndex + 1} / {finalists.length}
-            </span>
-          </div>
-
-          <div className="w-10" />
-        </div>
-
-        {/* Progress Dots */}
-        <div className="flex justify-center gap-1.5 px-4 pb-2">
-          {finalists.map((_, index) => (
-            <div
-              key={index}
-              className={`h-1 rounded-full transition-all ${
-                index === currentIndex
-                  ? 'w-8 bg-white'
-                  : index < currentIndex
-                  ? 'w-4 bg-white/60'
-                  : 'w-4 bg-white/20'
-              }`}
-            />
-          ))}
+          <h1 className="text-lg font-black text-ash">Vote for Beast</h1>
+          <button
+            onClick={() => setShowLeaderboard(!showLeaderboard)}
+            className="px-3 py-1.5 rounded-lg bg-digital-grape/30 text-ash text-sm font-bold hover:bg-digital-grape/50 transition-colors"
+          >
+            {showLeaderboard ? 'Videos' : 'Leaderboard'}
+          </button>
         </div>
       </div>
 
-      {/* Video Carousel */}
-      <div
-        className="flex-1 relative"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Background Thumbnail */}
-        <div
-          className="absolute inset-0 bg-cover bg-center blur-2xl opacity-30"
-          style={{ backgroundImage: `url(${currentClip.thumbnailUrl})` }}
-        />
-
-        {/* Video Content */}
-        <div className="relative h-full flex items-center justify-center p-4">
-          <div className="w-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden shadow-elevated">
-            {/* For MVP: Show thumbnail, in production would be video */}
-            <img
-              src={currentClip.thumbnailUrl}
-              alt={currentClip.caption}
-              className="w-full h-full object-cover"
-            />
-
-            {/* Clip Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-carbon/90">
-              {/* Creator Info */}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-digital-grape border-2 border-digital-grape/30 flex items-center justify-center text-white font-semibold">
-                  {currentClip.user?.name.charAt(0) || 'A'}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">
-                    {currentClip.user?.name || 'Anonymous'}
-                  </p>
-                  <p className="text-xs text-white/70">
-                    {currentClip.user?.year || 'Student'}
-                  </p>
-                </div>
-                {currentClip.isBoosted && (
-                  <div className="ml-auto bg-signal-lime/20 px-2 py-1 rounded-full border border-signal-lime/30">
-                    <span className="text-xs font-semibold text-signal-lime">
-                      ⚡ Boosted
-                    </span>
+      {/* Main Content - Video Player or Leaderboard */}
+      <AnimatePresence mode="wait">
+        {!showLeaderboard ? (
+          <motion.div
+            key="video-player"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="h-full w-full"
+          >
+            {/* Video Container */}
+            <div className="relative h-full w-full flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentClip.id}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -50 }}
+                  transition={{ duration: 0.3 }}
+                  drag="y"
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(e, { offset, velocity }) => {
+                    if (offset.y > 100 || velocity.y > 500) {
+                      handleSwipe('down');
+                    } else if (offset.y < -100 || velocity.y < -500) {
+                      handleSwipe('up');
+                    }
+                  }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  {/* Enhanced Video Player with double-tap to vote */}
+                  <div className="relative w-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden">
+                    <EnhancedVideoPlayer
+                      videoUrl={currentClip.videoUrl}
+                      caption={`${currentClip.caption} • ${currentIndex + 1}/${submissions.length}`}
+                      votesCount={currentClip.votesCount}
+                      onVote={() => handleVote(currentClip.id)}
+                      canVote={canVote && !hasVoted && votedClipId !== currentClip.id}
+                      hasVoted={hasVoted || votedClipId === currentClip.id}
+                      autoPlay={true}
+                      muted={false}
+                    />
                   </div>
-                )}
-              </div>
+                </motion.div>
+              </AnimatePresence>
 
-              {/* Caption */}
-              <p className="text-white text-sm leading-relaxed mb-4">
-                {currentClip.caption}
-              </p>
+              {/* Vote Button - Right Side */}
+              <div className="absolute right-4 bottom-32 flex flex-col items-center gap-6 z-10">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => handleVote(currentClip.id)}
+                  disabled={hasVoted || votedClipId === currentClip.id}
+                  className={`relative flex flex-col items-center gap-2 ${
+                    hasVoted || votedClipId === currentClip.id
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
+                >
+                  <div
+                    className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl ${
+                      votedClipId === currentClip.id
+                        ? 'bg-signal-lime text-nightfall'
+                        : 'bg-gradient-to-br from-electric-coral to-signal-lime text-nightfall'
+                    }`}
+                  >
+                    {votedClipId === currentClip.id ? '✓' : '👍'}
+                  </div>
+                  <span className="text-xs font-bold text-ash">
+                    {votedClipId === currentClip.id ? 'Voted!' : 'Vote'}
+                  </span>
+                </motion.button>
 
-              {/* Stats */}
-              <div className="flex items-center gap-4 text-xs text-white/70 mb-4">
-                <span>🔥 {currentClip.reactionsCount}</span>
-                <span>•</span>
-                <span>{currentClip.duration}s</span>
+                {/* Swipe Indicators */}
+                <div className="flex flex-col gap-3 opacity-50">
+                  {currentIndex > 0 && (
+                    <button
+                      onClick={() => handleSwipe('down')}
+                      className="text-ash"
+                    >
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M7 14l5-5 5 5z" />
+                      </svg>
+                    </button>
+                  )}
+                  {currentIndex < submissions.length - 1 && (
+                    <button
+                      onClick={() => handleSwipe('up')}
+                      className="text-ash"
+                    >
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M7 10l5 5 5-5z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Navigation Arrows */}
-        {currentIndex > 0 && (
-          <button
-            onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white hover:scale-110 transition-transform active:scale-95"
+          </motion.div>
+        ) : (
+          <motion.div
+            key="leaderboard"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="h-full w-full overflow-y-auto pt-20 pb-10 px-4"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-        )}
+            {/* Leaderboard */}
+            <div className="max-w-2xl mx-auto space-y-4">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-black text-ash mb-2">🏆 Leaderboard</h2>
+                <p className="text-steel text-sm">
+                  {currentWeek?.title || 'Current Week Rankings'}
+                </p>
+              </div>
 
-        {currentIndex < finalists.length - 1 && (
-          <button
-            onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white hover:scale-110 transition-transform active:scale-95"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
-      </div>
+              {leaderboard.map((clip, index) => (
+                <motion.div
+                  key={clip.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`flex items-center gap-4 p-4 rounded-2xl ${
+                    index === 0
+                      ? 'bg-gradient-to-r from-signal-lime/20 to-electric-coral/20 border-2 border-signal-lime/40'
+                      : index === 1
+                      ? 'bg-gradient-to-r from-digital-grape/20 to-brand-mocha/20 border border-digital-grape/40'
+                      : index === 2
+                      ? 'bg-gradient-to-r from-electric-coral/20 to-digital-grape/20 border border-electric-coral/40'
+                      : 'bg-carbon border border-steel/20'
+                  }`}
+                >
+                  {/* Rank */}
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-nightfall flex items-center justify-center">
+                    {index === 0 ? (
+                      <span className="text-2xl">🥇</span>
+                    ) : index === 1 ? (
+                      <span className="text-2xl">🥈</span>
+                    ) : index === 2 ? (
+                      <span className="text-2xl">🥉</span>
+                    ) : (
+                      <span className="text-lg font-black text-steel">#{index + 1}</span>
+                    )}
+                  </div>
 
-      {/* Vote Button */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 safe-bottom">
-        <div className="max-w-md mx-auto">
-          {hasVoted ? (
-            <div className="space-y-4">
-              {votedClipId === currentClip.id ? (
-                <div className="bg-signal-lime/20 border-2 border-signal-lime/30 rounded-2xl p-6 text-center shadow-elevated">
-                  <div className="text-4xl mb-2">✓</div>
-                  <p className="text-white font-semibold mb-1">
-                    You voted for this Beast!
-                  </p>
-                  <p className="text-white/70 text-sm">
-                    Returning to feed...
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated rounded-2xl p-4 text-center">
-                  <p className="text-white/80 text-sm">
-                    ✓ You've already voted this week
-                  </p>
-                </div>
-              )}
+                  {/* Video Thumbnail */}
+                  <div className="flex-shrink-0 w-16 h-24 rounded-lg overflow-hidden bg-nightfall">
+                    <video
+                      src={clip.videoUrl}
+                      className="w-full h-full object-cover"
+                      muted
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-ash font-semibold truncate">{clip.caption}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-lg">🔥</span>
+                      <span className="text-ash font-bold">{clip.votesCount}</span>
+                      <span className="text-steel text-sm">votes</span>
+                    </div>
+                  </div>
+
+                  {/* Vote Button */}
+                  {!hasVoted && votedClipId !== clip.id && (
+                    <button
+                      onClick={() => handleVote(clip.id)}
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall font-bold text-sm hover:scale-105 transition-transform"
+                    >
+                      Vote
+                    </button>
+                  )}
+                  {votedClipId === clip.id && (
+                    <div className="px-4 py-2 rounded-xl bg-signal-lime/20 border border-signal-lime text-signal-lime font-bold text-sm">
+                      ✓ Voted
+                    </div>
+                  )}
+                </motion.div>
+              ))}
             </div>
-          ) : (
-            <button
-              onClick={() => handleVote(currentClip.id)}
-              className="
-                w-full bg-signal-lime
-                text-nightfall font-bold text-lg
-                px-8 py-4 rounded-2xl
-                border-2 border-signal-lime/30
-                shadow-elevated
-                active:scale-95 transition-transform duration-150
-                hover:shadow-button
-              "
-            >
-              🔥 Vote for this Beast
-            </button>
-          )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          <p className="text-center text-white/60 text-xs mt-4">
-            {hasVoted
-              ? 'One vote per week. Choose wisely!'
-              : 'You can only vote once per week'}
-          </p>
+      {/* Voting Status Badge */}
+      {hasVoted && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="px-4 py-2 rounded-full bg-signal-lime text-nightfall font-bold text-sm shadow-lg"
+          >
+            ✅ You&apos;ve voted this week!
+          </motion.div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

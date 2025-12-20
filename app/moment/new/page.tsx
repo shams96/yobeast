@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { MOCK_BEAST_WEEK } from '@/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useReals } from '@/context/RealsContext';
 
 type MomentType = 'moment' | 'beast_moment';
 type CaptureMode = 'photo' | 'video';
@@ -17,6 +18,7 @@ export default function NewMomentPage() {
   const [captureMode, setCaptureMode] = useState<CaptureMode>('photo');
 
   const router = useRouter();
+  const { realsTime, markAsPosted } = useReals();
   const beastWeek = MOCK_BEAST_WEEK;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -94,55 +96,162 @@ export default function NewMomentPage() {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      // DUAL CAMERA CAPTURE - 4Real's core authenticity mechanic
+      // Simultaneously capture front and back cameras
+
+      // Request back camera (main environment view)
+      const backStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1080 }, height: { ideal: 1920 } },
+        audio: false,
+      });
+
+      // Request front camera (selfie view)
+      const frontStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
         audio: false,
       });
 
-      // Capture photo
-      const video = document.createElement('video');
-      video.srcObject = stream;
-      video.playsInline = true;
-      video.muted = true;
+      // Create video elements for both cameras
+      const backVideo = document.createElement('video');
+      backVideo.srcObject = backStream;
+      backVideo.playsInline = true;
+      backVideo.muted = true;
 
-      await video.play();
+      const frontVideo = document.createElement('video');
+      frontVideo.srcObject = frontStream;
+      frontVideo.playsInline = true;
+      frontVideo.muted = true;
 
-      // Wait for video to be ready
-      await new Promise<void>((resolve) => {
-        if (video.readyState >= video.HAVE_ENOUGH_DATA) {
-          resolve();
-        } else {
-          video.onloadeddata = () => resolve();
-        }
-      });
+      // Play both videos
+      await backVideo.play();
+      await frontVideo.play();
 
+      // Wait for both videos to be ready
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          if (backVideo.readyState >= backVideo.HAVE_ENOUGH_DATA) {
+            resolve();
+          } else {
+            backVideo.onloadeddata = () => resolve();
+          }
+        }),
+        new Promise<void>((resolve) => {
+          if (frontVideo.readyState >= frontVideo.HAVE_ENOUGH_DATA) {
+            resolve();
+          } else {
+            frontVideo.onloadeddata = () => resolve();
+          }
+        })
+      ]);
+
+      // Create composite canvas with dual camera view
       const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = backVideo.videoWidth;
+      canvas.height = backVideo.videoHeight;
       const ctx = canvas.getContext('2d');
 
       if (!ctx) {
         throw new Error('Failed to get canvas context');
       }
 
-      ctx.drawImage(video, 0, 0);
+      // Draw back camera (main view) - full canvas
+      ctx.drawImage(backVideo, 0, 0, canvas.width, canvas.height);
 
-      // Convert to blob
+      // Draw front camera (selfie) in top-left corner with rounded border
+      // 4Real style: small circular overlay
+      const frontSize = Math.min(canvas.width, canvas.height) * 0.25; // 25% of canvas size
+      const frontX = canvas.width * 0.05; // 5% from left
+      const frontY = canvas.height * 0.05; // 5% from top
+      const radius = frontSize / 2;
+
+      // Save context state
+      ctx.save();
+
+      // Create circular clipping path for front camera
+      ctx.beginPath();
+      ctx.arc(frontX + radius, frontY + radius, radius, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+
+      // Draw front camera image (mirrored like selfie)
+      ctx.translate(frontX + frontSize, frontY);
+      ctx.scale(-1, 1);
+      ctx.drawImage(frontVideo, 0, 0, frontSize, frontSize);
+
+      // Restore context
+      ctx.restore();
+
+      // Add white border around front camera circle (4Real signature style)
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(frontX + radius, frontY + radius, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Convert composite to blob
       canvas.toBlob((blob) => {
         if (blob) {
-          const file = new File([blob], `moment-${Date.now()}.jpg`, { type: 'image/jpeg' });
+          const file = new File([blob], `4real-moment-${Date.now()}.jpg`, { type: 'image/jpeg' });
           const url = URL.createObjectURL(file);
           setMediaFile(file);
           setMediaPreviewUrl(url);
         }
-        // Clean up stream
-        stream.getTracks().forEach((track) => track.stop());
+
+        // Clean up both streams
+        backStream.getTracks().forEach((track) => track.stop());
+        frontStream.getTracks().forEach((track) => track.stop());
       }, 'image/jpeg', 0.95);
     } catch (error) {
-      console.error('Camera capture error:', error);
-      alert(`Camera error: ${error instanceof Error ? error.message : 'Permission denied. Please allow camera access.'}`);
-      // Fallback to file input
-      fileInputRef.current?.click();
+      console.error('Dual camera capture error:', error);
+
+      // Fallback to single camera if dual camera fails
+      try {
+        console.log('Falling back to single front camera...');
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
+          audio: false,
+        });
+
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.playsInline = true;
+        video.muted = true;
+        await video.play();
+
+        await new Promise<void>((resolve) => {
+          if (video.readyState >= video.HAVE_ENOUGH_DATA) {
+            resolve();
+          } else {
+            video.onloadeddata = () => resolve();
+          }
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          throw new Error('Failed to get canvas context');
+        }
+
+        ctx.drawImage(video, 0, 0);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `moment-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            const url = URL.createObjectURL(file);
+            setMediaFile(file);
+            setMediaPreviewUrl(url);
+          }
+          stream.getTracks().forEach((track) => track.stop());
+        }, 'image/jpeg', 0.95);
+      } catch (fallbackError) {
+        console.error('Fallback camera error:', fallbackError);
+        alert(`Camera error: ${fallbackError instanceof Error ? fallbackError.message : 'Permission denied. Please allow camera access.'}`);
+        // Final fallback to file input
+        fileInputRef.current?.click();
+      }
     }
   };
 
@@ -173,6 +282,9 @@ export default function NewMomentPage() {
       const userStr = localStorage.getItem('yollr_user');
       const user = userStr ? JSON.parse(userStr) : null;
 
+      // Check if posting late (outside 4Real window)
+      const wasLate = !realsTime.isActive && !realsTime.hasPostedToday;
+
       // Create moment object
       const newMoment = {
         id: `moment_${Date.now()}`,
@@ -186,6 +298,7 @@ export default function NewMomentPage() {
         reactionsCount: 0,
         createdAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        isLate: wasLate, // 4Real late posting indicator
         user: user || {
           id: 'demo_user_001',
           name: 'Demo Student',
@@ -204,10 +317,17 @@ export default function NewMomentPage() {
       // Save back to localStorage
       localStorage.setItem('yollr_moments', JSON.stringify(moments));
 
+      // Mark as posted in 4Real context (unlocks feed viewing)
+      markAsPosted(wasLate);
+
       console.log('✅ Moment posted successfully!', newMoment);
 
-      // Show success message
-      alert('🎉 Your moment has been posted!');
+      // Show success message with late warning
+      if (wasLate) {
+        alert('🎉 Your moment has been posted!\n⏰ Posted late - but that\'s okay!');
+      } else {
+        alert('🎉 Your moment has been posted on time!');
+      }
 
       // Navigate back to feed
       router.push('/');

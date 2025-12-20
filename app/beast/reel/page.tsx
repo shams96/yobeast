@@ -1,262 +1,220 @@
 'use client';
 
-import { MOCK_FINALISTS } from '@/lib/mockBeastClips';
-import { MOCK_BEAST_WEEK } from '@/types';
-import { MOCK_MOMENTS } from '@/lib/mockData';
+import { useState } from 'react';
+import { useBeastWeekCycle } from '@/context/BeastWeekCycleContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import EnhancedVideoPlayer from '@/components/EnhancedVideoPlayer';
 
 export default function BeastReelPage() {
-  const beastWeek = MOCK_BEAST_WEEK;
-  const beastMoments = MOCK_MOMENTS.filter(m => m.isBeastMoment);
-  const hasFinalists = MOCK_FINALISTS.length > 0;
-  const winnerClip = hasFinalists ? MOCK_FINALISTS[0] : null;
-  const finalistClips = hasFinalists ? MOCK_FINALISTS.slice(1) : [];
+  const {
+    currentWeek,
+    currentPhase,
+    beastReel,
+    winner,
+  } = useBeastWeekCycle();
 
-  // Show empty state if no content yet
-  if (!hasFinalists && beastMoments.length === 0) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  // Only accessible during COOLDOWN_REEL phase
+  if (currentPhase !== 'COOLDOWN_REEL') {
     return (
-      <div className="min-h-screen bg-nightfall flex flex-col items-center justify-center p-6">
-        <Link
-          href="/"
-          className="absolute top-6 left-6 w-10 h-10 rounded-full bg-carbon border-2 border-steel/30 flex items-center justify-center text-ash hover:bg-carbon/80 transition-colors"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </Link>
-
-        <div className="max-w-md text-center space-y-6">
-          <div className="text-6xl mb-4">🎥</div>
-          <h1 className="text-2xl font-bold text-ash">
-            Beast Reel Coming Soon!
-          </h1>
-          <p className="text-steel leading-relaxed">
-            The Beast Reel will be available after the finale event. Check back soon to relive the best moments!
+      <div className="min-h-screen bg-nightfall px-4 py-8">
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="text-6xl">🎞️</div>
+          <h1 className="text-2xl font-black text-ash">Beast Reel Not Ready</h1>
+          <p className="text-steel">
+            The Beast Reel will be available on Sunday after the finale!
           </p>
-          <Link
-            href="/"
-            className="inline-block bg-digital-grape text-white font-semibold px-8 py-3 rounded-xl hover:bg-digital-grape/90 transition-colors"
-          >
-            Back to Feed
+          <Link href="/">
+            <button className="px-6 py-3 rounded-xl bg-digital-grape text-ash font-bold hover:scale-105 transition-transform">
+              Back to Feed
+            </button>
           </Link>
         </div>
       </div>
     );
   }
 
+  // No reel content yet
+  if (beastReel.length === 0) {
+    return (
+      <div className="min-h-screen bg-nightfall px-4 py-8">
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="text-6xl">📹</div>
+          <h1 className="text-2xl font-black text-ash">No Reel Available</h1>
+          <p className="text-steel">
+            No submissions were made this week. Check back next week!
+          </p>
+          <Link href="/">
+            <button className="px-6 py-3 rounded-xl bg-digital-grape text-ash font-bold hover:scale-105 transition-transform">
+              Back to Feed
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const currentClip = beastReel[currentIndex];
+
+  const handleNext = () => {
+    if (currentIndex < beastReel.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    } else {
+      setCurrentIndex(0); // Loop back to start
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    } else {
+      setCurrentIndex(beastReel.length - 1); // Loop to end
+    }
+  };
+
   return (
-    <div className="min-h-screen pb-20">
+    <div className="relative h-screen w-full bg-nightfall overflow-hidden">
       {/* Header */}
-      <div className="sticky top-0 z-10 glass border-b border-dark-border safe-top">
-        <div className="flex items-center justify-between px-4 py-3">
-          <Link
-            href="/"
-            className="text-text-secondary hover:text-text-primary transition-colors"
-          >
+      <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-nightfall/90 to-transparent px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="text-ash hover:text-steel transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
+          <div className="text-center">
+            <h1 className="text-lg font-black text-ash">🎞️ Beast Reel</h1>
+            <p className="text-xs text-steel">Week {currentWeek?.weekNumber} Highlights</p>
+          </div>
+          <div className="w-6" />
+        </div>
+      </div>
 
-          <h1 className="text-lg font-bold text-text-primary">
-            Beast Reel
-          </h1>
-
-          <button
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: `Beast Week ${beastWeek.weekNumber} Reel`,
-                  text: 'Check out this week\'s Beast Reel!',
-                  url: window.location.href,
-                });
-              }
-            }}
-            className="text-text-secondary hover:text-text-primary transition-colors"
+      {/* Winner Badge */}
+      {winner && currentClip.id === winner.id && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="px-4 py-2 rounded-full bg-signal-lime text-nightfall font-black text-sm shadow-lg flex items-center gap-2"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            <span>👑</span>
+            <span>BEAST OF THE WEEK</span>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Video Player */}
+      <div className="relative h-full w-full flex items-center justify-center">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentClip.id}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            {/* Enhanced Video Player */}
+            <div className="relative w-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl">
+              <EnhancedVideoPlayer
+                videoUrl={currentClip.videoUrl}
+                caption={`${
+                  currentIndex === 0 ? '🥇 ' :
+                  currentIndex === 1 ? '🥈 ' :
+                  currentIndex === 2 ? '🥉 ' :
+                  `#${currentIndex + 1} `
+                }${currentClip.caption} • ${currentIndex + 1}/${beastReel.length}`}
+                votesCount={currentClip.votesCount}
+                canVote={false}
+                hasVoted={true}
+                autoPlay={isPlaying}
+                muted={false}
+                className="h-full"
+              />
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Navigation Buttons */}
+        <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-10">
+          {/* Previous Button */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handlePrevious}
+            className="pointer-events-auto w-12 h-12 rounded-full bg-nightfall/80 backdrop-blur-sm border border-steel/20 flex items-center justify-center text-ash hover:bg-nightfall transition-colors"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
             </svg>
-          </button>
+          </motion.button>
+
+          {/* Next Button */}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleNext}
+            className="pointer-events-auto w-12 h-12 rounded-full bg-nightfall/80 backdrop-blur-sm border border-steel/20 flex items-center justify-center text-ash hover:bg-nightfall transition-colors"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
+            </svg>
+          </motion.button>
         </div>
 
-        {/* Reel Info */}
-        <div className="px-4 pb-3 space-y-1">
-          <h2 className="text-2xl font-bold text-text-primary">
-            {beastWeek.title}
-          </h2>
-          <div className="flex items-center gap-3 text-xs text-text-tertiary">
-            <span>Week {beastWeek.weekNumber}</span>
-            <span>•</span>
-            <span>{MOCK_FINALISTS.length + beastMoments.length} clips</span>
-            <span>•</span>
-            <span>Best of the week</span>
+        {/* Bottom Info Panel */}
+        <div className="absolute bottom-4 right-4 z-20">
+          <div className="bg-nightfall/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-steel/20">
+            <p className="text-steel text-xs font-semibold">
+              {currentIndex + 1} / {beastReel.length}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="space-y-6 pt-6">
-        {/* Winner Section - Only show if we have a winner */}
-        {winnerClip && (
-          <div className="px-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🏆</span>
-              <h3 className="text-lg font-bold text-ash">
-                Beast of the Week
-              </h3>
+      {/* Week Summary Card - Bottom */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 p-4">
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="max-w-md mx-auto bg-gradient-to-br from-digital-grape/20 to-brand-mocha/20 border border-digital-grape/40 rounded-2xl p-4 backdrop-blur-lg"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-steel font-semibold mb-1">This Week&apos;s Challenge</p>
+              <p className="text-ash font-bold">{currentWeek?.title}</p>
             </div>
-
-            <div className="bg-carbon rounded-2xl p-4 border border-steel/20">
-              <div className="aspect-[9/16] rounded-xl overflow-hidden mb-4 bg-nightfall flex items-center justify-center">
-                <div className="text-6xl">🎬</div>
-              </div>
-
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-electric-coral to-signal-lime flex items-center justify-center text-nightfall font-bold">
-                  {winnerClip.user?.name?.charAt(0) || 'W'}
-                </div>
-                <div className="flex-1">
-                  <p className="text-base font-semibold text-ash">
-                    {winnerClip.user?.name || 'Winner'}
-                  </p>
-                  <p className="text-sm text-steel">
-                    {winnerClip.user?.year || 'Student'}
-                  </p>
-                </div>
-                <div className="bg-signal-lime/20 px-3 py-1.5 rounded-full border border-signal-lime/30">
-                  <span className="text-sm font-semibold text-signal-lime">
-                    Winner
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-sm text-steel mb-4">
-                {winnerClip.caption}
-              </p>
-
-            <div className="flex items-center gap-4 text-sm text-text-tertiary">
-              <span className="flex items-center gap-1.5">
-                <span>🔥</span>
-                <span>{winnerClip.reactionsCount}</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span>🗳️</span>
-                <span>{winnerClip.votesCount} votes</span>
-              </span>
+            <div className="text-right">
+              <p className="text-xs text-steel font-semibold mb-1">Prize Pool</p>
+              <p className="text-signal-lime font-bold">{currentWeek?.prize.displayString}</p>
             </div>
           </div>
-        </div>
-        )}
 
-        {/* Finalists Section - Only show if we have finalists */}
-        {finalistClips.length > 0 && (
-          <div className="px-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🔥</span>
-              <h3 className="text-lg font-bold text-ash">
-                Top Finalists
-              </h3>
+          {winner && (
+            <div className="mt-3 pt-3 border-t border-steel/20">
+              <p className="text-xs text-steel mb-1">👑 Beast of the Week</p>
+              <p className="text-ash font-semibold text-sm truncate">{winner.caption}</p>
             </div>
+          )}
 
-            <div className="space-y-3">
-              {finalistClips.map((clip, index) => (
-              <div key={clip.id} className="card">
-                <div className="flex gap-4">
-                  {/* Thumbnail */}
-                  <div className="flex-shrink-0 w-24 h-32 rounded-xl overflow-hidden bg-dark-surface">
-                    <img
-                      src={clip.thumbnailUrl}
-                      alt={clip.caption}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-pink to-brand-purple flex items-center justify-center text-white text-xs font-bold">
-                          {clip.user?.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-text-primary">
-                            {clip.user?.name}
-                          </p>
-                          <p className="text-xs text-text-tertiary">
-                            Finalist #{index + 2}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-sm text-text-secondary line-clamp-2">
-                      {clip.caption}
-                    </p>
-
-                    <div className="flex items-center gap-3 text-xs text-text-tertiary">
-                      <span>🔥 {clip.reactionsCount}</span>
-                      <span>🗳️ {clip.votesCount}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="mt-3 flex gap-2">
+            <Link href="/beast" className="flex-1">
+              <button className="w-full px-4 py-2 rounded-xl bg-carbon border border-steel/20 text-ash font-semibold text-sm hover:border-ash transition-colors">
+                View Challenge
+              </button>
+            </Link>
+            <Link href="/" className="flex-1">
+              <button className="w-full px-4 py-2 rounded-xl bg-digital-grape text-ash font-semibold text-sm hover:scale-105 transition-transform">
+                Back to Feed
+              </button>
+            </Link>
           </div>
-        </div>
-        )}
-
-        {/* Beast Moments Section */}
-        {beastMoments.length > 0 && (
-          <div className="px-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">✨</span>
-              <h3 className="text-lg font-bold text-ash">
-                Beast Moments
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              {beastMoments.map((moment) => (
-                <div
-                  key={moment.id}
-                  className="aspect-square rounded-xl overflow-hidden bg-nightfall flex items-center justify-center border border-steel/20"
-                >
-                  {moment.imageUrl ? (
-                    <img
-                      src={moment.imageUrl}
-                      alt={moment.caption}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="text-4xl">📸</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* End Section */}
-        <div className="px-4 pb-8">
-          <div className="glass-elevated p-6 rounded-2xl text-center space-y-3">
-            <div className="text-4xl">🎬</div>
-            <p className="text-text-primary font-semibold">
-              That's a wrap for Week {beastWeek.weekNumber}!
-            </p>
-            <p className="text-sm text-text-secondary">
-              New Beast challenge drops Monday at 9 AM
-            </p>
-
-            <div className="pt-4">
-              <Link href="/" className="block">
-                <button className="btn-primary w-full">
-                  Back to Feed
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

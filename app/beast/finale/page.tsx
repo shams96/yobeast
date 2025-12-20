@@ -1,403 +1,332 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MOCK_FINALISTS } from '@/lib/mockBeastClips';
-import { MOCK_BEAST_WEEK } from '@/types';
+import { useBeastWeekCycle } from '@/context/BeastWeekCycleContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-
-type FinaleState = 'LOBBY' | 'LIVE_VOTE' | 'REVEAL';
+import confetti from 'canvas-confetti';
+import EnhancedVideoPlayer from '@/components/EnhancedVideoPlayer';
 
 export default function BeastFinalePage() {
-  const [finaleState, setFinaleState] = useState<FinaleState>('LOBBY');
-  const [currentClipIndex, setCurrentClipIndex] = useState(0);
-  const [votedClipId, setVotedClipId] = useState<string | null>(null);
-  const [onlineCount, setOnlineCount] = useState(312);
-  const [timeRemaining, setTimeRemaining] = useState(180); // 3 minutes
-  const [confettiActive, setConfettiActive] = useState(false);
+  const {
+    currentWeek,
+    currentPhase,
+    topThree,
+    winner,
+    leaderboard,
+  } = useBeastWeekCycle();
 
-  const router = useRouter();
-  const beastWeek = MOCK_BEAST_WEEK;
-  const finalists = MOCK_FINALISTS.slice(0, 3); // Top 3 for finale
-  const currentClip = finalists[currentClipIndex];
-  const winnerClip = finalists[0]; // For demo, first is winner
+  const [revealed, setRevealed] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
 
-  // Simulate countdown
-  useEffect(() => {
-    if (finaleState === 'LIVE_VOTE' && timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            setFinaleState('REVEAL');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [finaleState, timeRemaining]);
-
-  // Simulate online count fluctuation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setOnlineCount(prev => prev + Math.floor(Math.random() * 10) - 5);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleStartFinale = () => {
-    setFinaleState('LIVE_VOTE');
-  };
-
-  const handleVote = (clipId: string) => {
-    if (votedClipId) return;
-    setVotedClipId(clipId);
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // LOBBY STATE
-  if (finaleState === 'LOBBY') {
+  // Only accessible during FINALE_DAY phase
+  if (currentPhase !== 'FINALE_DAY') {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-future-dusk">
-        {/* Content */}
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
-          {/* Logo/Icon */}
-          <div className="text-8xl mb-6 animate-scale-in">
-            🎪
-          </div>
-
-          {/* Title */}
-          <h1 className="text-4xl font-bold text-white mb-3">
-            Beast Finale
-          </h1>
-          <p className="text-lg text-white/80 mb-8">
-            {beastWeek.title}
+      <div className="min-h-screen bg-nightfall px-4 py-8">
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="text-6xl">⏰</div>
+          <h1 className="text-2xl font-black text-ash">Finale Not Started</h1>
+          <p className="text-steel">
+            The live finale happens Saturday at 6 PM!
           </p>
-
-          {/* Countdown Card */}
-          <div className="bg-carbon border-2 border-future-dusk/30 shadow-elevated p-8 rounded-3xl mb-8 max-w-sm w-full">
-            <p className="text-sm text-white/70 mb-2">
-              Final round starts in
-            </p>
-            <div className="text-5xl font-bold text-white mb-4">
-              03:24
-            </div>
-            <p className="text-xs text-white/60">
-              Get ready to vote for the winner!
-            </p>
-          </div>
-
-          {/* Online Count */}
-          <div className="bg-carbon border-2 border-future-dusk/30 shadow-elevated px-6 py-3 rounded-full flex items-center gap-3 mb-8">
-            <div className="w-2 h-2 rounded-full bg-signal-lime animate-pulse" />
-            <span className="text-white font-semibold">
-              {onlineCount} students online
-            </span>
-          </div>
-
-          {/* Top 3 Finalists Preview */}
-          <div className="mb-8">
-            <p className="text-sm text-white/70 mb-4">
-              Tonight's Finalists
-            </p>
-            <div className="flex gap-4 justify-center">
-              {finalists.map((clip, index) => (
-                <div key={clip.id} className="text-center">
-                  <div className="w-16 h-16 rounded-full overflow-hidden mb-2 ring-2 ring-white/30">
-                    <img
-                      src={clip.thumbnailUrl}
-                      alt={clip.user?.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <p className="text-xs text-white/80 font-medium">
-                    {clip.user?.name}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* CTA */}
-          <button
-            onClick={handleStartFinale}
-            className="btn-primary px-8 py-4 text-lg"
-          >
-            Enter Finale (Demo)
-          </button>
-
-          {/* Invite Friends */}
-          <button
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: 'Beast Finale is Live!',
-                  text: 'Join the Beast Finale watch party now!',
-                  url: window.location.href,
-                });
-              }
-            }}
-            className="mt-4 text-white/70 hover:text-white text-sm font-medium transition-colors"
-          >
-            Invite Friends →
-          </button>
-
-          {/* Close */}
-          <Link
-            href="/"
-            className="absolute top-4 left-4 w-10 h-10 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white safe-top"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  // LIVE VOTE STATE
-  if (finaleState === 'LIVE_VOTE') {
-    return (
-      <div className="fixed inset-0 bg-black flex flex-col">
-        {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-10 safe-top p-4 space-y-3">
-          {/* Timer & Online */}
-          <div className="flex items-center justify-between">
-            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-electric-coral animate-pulse" />
-              <span className="text-sm font-bold text-white">
-                LIVE
-              </span>
-            </div>
-
-            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full">
-              <span className="text-sm font-semibold text-white">
-                ⏱️ {formatTime(timeRemaining)}
-              </span>
-            </div>
-
-            <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated px-4 py-2 rounded-full">
-              <span className="text-xs text-white/80">
-                👥 {onlineCount}
-              </span>
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div className="flex justify-center gap-1.5">
-            {finalists.map((_, index) => (
-              <div
-                key={index}
-                className={`h-1 w-12 rounded-full ${
-                  index === currentClipIndex ? 'bg-white' : 'bg-white/30'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Clip Display */}
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="w-full max-w-md aspect-[9/16] rounded-2xl overflow-hidden shadow-elevated">
-            <img
-              src={currentClip.thumbnailUrl}
-              alt={currentClip.caption}
-              className="w-full h-full object-cover"
-            />
-
-            {/* Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-carbon/90">
-              <p className="text-white font-semibold mb-1">
-                {currentClip.user?.name}
-              </p>
-              <p className="text-white/80 text-sm">
-                {currentClip.caption}
-              </p>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          {currentClipIndex > 0 && (
-            <button
-              onClick={() => setCurrentClipIndex(currentClipIndex - 1)}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
-            >
-              ←
-            </button>
-          )}
-          {currentClipIndex < finalists.length - 1 && (
-            <button
-              onClick={() => setCurrentClipIndex(currentClipIndex + 1)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-carbon/90 border-2 border-ash/30 shadow-elevated flex items-center justify-center text-white"
-            >
-              →
-            </button>
-          )}
-        </div>
-
-        {/* Vote Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 safe-bottom">
-          <div className="max-w-md mx-auto">
-            {votedClipId ? (
-              <div className="bg-carbon/90 border-2 border-ash/30 shadow-elevated p-6 rounded-2xl text-center">
-                <p className="text-white font-semibold">
-                  {votedClipId === currentClip.id ? '✓ Your Vote' : 'You Voted'}
-                </p>
-                <p className="text-white/70 text-sm mt-1">
-                  Results after timer ends...
-                </p>
-              </div>
-            ) : (
-              <button
-                onClick={() => handleVote(currentClip.id)}
-                className="btn-primary w-full text-lg py-4"
-              >
-                🔥 Vote for {currentClip.user?.name}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Floating Reactions (decorative) */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute text-2xl animate-confetti"
-              style={{
-                left: `${20 + i * 15}%`,
-                animationDelay: `${i * 0.3}s`,
-                animationDuration: '4s',
-              }}
-            >
-              {['🔥', '😂', '💯', '👏', '❤️'][i]}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // REVEAL STATE
-  return (
-    <div className="min-h-screen relative overflow-hidden bg-signal-lime">
-
-      {confettiActive && (
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(50)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 rounded-full bg-accent-gold animate-confetti"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${3 + Math.random() * 2}s`,
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="relative flex flex-col items-center justify-center min-h-screen p-6 text-center">
-        {/* Trophy Icon */}
-        <div className="text-8xl mb-6 animate-scale-in">
-          🏆
-        </div>
-
-        {/* Winner Announcement */}
-        <h1 className="text-3xl font-bold text-white mb-2 animate-fade-in">
-          Yo'll r Beast
-        </h1>
-        <p className="text-lg text-white/80 mb-8">
-          Champion of Week {beastWeek.weekNumber}
-        </p>
-
-        {/* Winner Card */}
-        <div className="bg-carbon border-2 border-signal-lime/30 shadow-elevated p-8 rounded-3xl mb-8 max-w-sm w-full animate-scale-in">
-          <div className="w-32 h-32 mx-auto rounded-full overflow-hidden mb-4 ring-4 ring-nightfall">
-            <img
-              src={winnerClip.thumbnailUrl}
-              alt={winnerClip.user?.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">
-            {winnerClip.user?.name}
-          </h2>
-          <p className="text-white/70 text-sm mb-4">
-            "{winnerClip.caption}"
-          </p>
-          <div className="inline-flex items-center gap-2 bg-nightfall/20 px-4 py-2 rounded-full border border-nightfall/30">
-            <span className="text-2xl">💰</span>
-            <span className="text-nightfall font-bold">
-              ${beastWeek.prize.amount} Winner
-            </span>
-          </div>
-        </div>
-
-        {/* Runners Up */}
-        <div className="mb-8">
-          <p className="text-sm text-white/70 mb-4">
-            Runners Up
-          </p>
-          <div className="flex gap-4 justify-center">
-            {finalists.slice(1).map((clip) => (
-              <div key={clip.id} className="text-center">
-                <div className="w-16 h-16 rounded-full overflow-hidden mb-2 ring-2 ring-white/30">
-                  <img
-                    src={clip.thumbnailUrl}
-                    alt={clip.user?.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <p className="text-xs text-white/80">
-                  {clip.user?.name}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTAs */}
-        <div className="space-y-3 w-full max-w-sm">
-          <Link href="/beast/reel" className="block">
-            <button className="btn-primary w-full">
-              Watch Full Beast Reel
-            </button>
-          </Link>
-
-          <button
-            onClick={() => {
-              if (navigator.share) {
-                navigator.share({
-                  title: `${winnerClip.user?.name} won Beast Week ${beastWeek.weekNumber}!`,
-                  text: 'Check out this week\'s Beast winner!',
-                  url: window.location.origin,
-                });
-              }
-            }}
-            className="btn-secondary w-full"
-          >
-            Share Results
-          </button>
-
-          <Link href="/" className="block">
-            <button className="btn-ghost w-full">
+          <Link href="/">
+            <button className="px-6 py-3 rounded-xl bg-digital-grape text-ash font-bold hover:scale-105 transition-transform">
               Back to Feed
             </button>
           </Link>
         </div>
+      </div>
+    );
+  }
+
+  // No winner yet
+  if (!winner || topThree.length === 0) {
+    return (
+      <div className="min-h-screen bg-nightfall px-4 py-8">
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="text-6xl">📊</div>
+          <h1 className="text-2xl font-black text-ash">Calculating Results...</h1>
+          <p className="text-steel">
+            No submissions to show yet. Check back soon!
+          </p>
+          <Link href="/">
+            <button className="px-6 py-3 rounded-xl bg-digital-grape text-ash font-bold hover:scale-105 transition-transform">
+              Back to Feed
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const handleReveal = () => {
+    setRevealed(true);
+    setShowConfetti(true);
+
+    // Trigger confetti animation
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#B4F461', '#FF6B9D', '#9B59B6'],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#B4F461', '#FF6B9D', '#9B59B6'],
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+  };
+
+  return (
+    <div className="min-h-screen bg-nightfall pb-20">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-nightfall/95 backdrop-blur-lg border-b border-steel/20">
+        <div className="flex items-center justify-between px-4 py-4">
+          <Link href="/" className="text-steel hover:text-ash transition-colors">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </Link>
+          <h1 className="text-xl font-black text-ash">🏆 Beast Finale</h1>
+          <div className="w-6" />
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+        {/* Week Info Banner */}
+        <div className="text-center space-y-2">
+          <div className="text-6xl mb-4">🎬</div>
+          <h2 className="text-3xl font-black text-ash">{currentWeek?.title}</h2>
+          <p className="text-steel text-lg">{currentWeek?.theme}</p>
+          <div className="inline-block px-6 py-2 rounded-full bg-gradient-to-r from-signal-lime to-electric-coral text-nightfall font-bold text-lg mt-4">
+            {currentWeek?.prize.displayString}
+          </div>
+        </div>
+
+        {/* Reveal Button */}
+        {!revealed && (
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-center"
+          >
+            <button
+              onClick={handleReveal}
+              className="px-12 py-6 rounded-2xl bg-gradient-to-r from-electric-coral via-digital-grape to-signal-lime text-nightfall font-black text-2xl hover:scale-105 active:scale-95 transition-transform shadow-2xl"
+            >
+              🎉 Reveal Winner
+            </button>
+          </motion.div>
+        )}
+
+        {/* Top 3 Podium */}
+        <AnimatePresence>
+          {revealed && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="relative"
+            >
+              {/* Winner Spotlight */}
+              <div className="mb-12">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
+                  className="relative bg-gradient-to-br from-signal-lime/30 to-electric-coral/30 border-4 border-signal-lime rounded-3xl p-8 shadow-2xl"
+                >
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2">
+                    <div className="px-6 py-2 rounded-full bg-signal-lime text-nightfall font-black text-lg shadow-lg">
+                      👑 BEAST OF THE WEEK
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row items-center gap-6 mt-4">
+                    {/* Winner Video - Enhanced Player */}
+                    <div className="flex-shrink-0 w-full md:w-64 aspect-[9/16] rounded-2xl overflow-hidden shadow-xl">
+                      <EnhancedVideoPlayer
+                        videoUrl={winner.videoUrl}
+                        caption={winner.caption}
+                        votesCount={winner.votesCount}
+                        canVote={false}
+                        hasVoted={true}
+                        autoPlay={true}
+                        muted={false}
+                      />
+                    </div>
+
+                    {/* Winner Info */}
+                    <div className="flex-1 text-center md:text-left space-y-4">
+                      <h3 className="text-3xl font-black text-ash">{winner.caption}</h3>
+
+                      <div className="flex items-center justify-center md:justify-start gap-3">
+                        <span className="text-4xl">🔥</span>
+                        <span className="text-ash font-black text-4xl">{winner.votesCount}</span>
+                        <span className="text-steel text-xl">votes</span>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center md:justify-start gap-2">
+                          <span className="text-2xl">💰</span>
+                          <span className="text-signal-lime font-black text-2xl">
+                            {currentWeek?.prize.displayString}
+                          </span>
+                        </div>
+                        <p className="text-steel text-sm">
+                          Congratulations! You are the Beast of Week {currentWeek?.weekNumber}!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Podium - 2nd and 3rd Place */}
+              {topThree.length >= 2 && (
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* 2nd Place */}
+                  {topThree[1] && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1, duration: 0.6 }}
+                      className="bg-gradient-to-br from-digital-grape/20 to-brand-mocha/20 border-2 border-digital-grape/40 rounded-2xl p-6"
+                    >
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-4xl">🥈</span>
+                        <span className="text-xl font-black text-ash">2nd Place</span>
+                      </div>
+
+                      <div className="aspect-[9/16] w-full rounded-xl overflow-hidden mb-4">
+                        <EnhancedVideoPlayer
+                          videoUrl={topThree[1].videoUrl}
+                          caption={topThree[1].caption}
+                          votesCount={topThree[1].votesCount}
+                          canVote={false}
+                          hasVoted={true}
+                          autoPlay={false}
+                          muted={true}
+                        />
+                      </div>
+
+                      <p className="text-ash font-semibold mb-2">{topThree[1].caption}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🔥</span>
+                        <span className="text-ash font-bold text-xl">{topThree[1].votesCount}</span>
+                        <span className="text-steel text-sm">votes</span>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* 3rd Place */}
+                  {topThree[2] && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 1.2, duration: 0.6 }}
+                      className="bg-gradient-to-br from-electric-coral/20 to-digital-grape/20 border-2 border-electric-coral/40 rounded-2xl p-6"
+                    >
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-4xl">🥉</span>
+                        <span className="text-xl font-black text-ash">3rd Place</span>
+                      </div>
+
+                      <div className="aspect-[9/16] w-full rounded-xl overflow-hidden mb-4">
+                        <EnhancedVideoPlayer
+                          videoUrl={topThree[2].videoUrl}
+                          caption={topThree[2].caption}
+                          votesCount={topThree[2].votesCount}
+                          canVote={false}
+                          hasVoted={true}
+                          autoPlay={false}
+                          muted={true}
+                        />
+                      </div>
+
+                      <p className="text-ash font-semibold mb-2">{topThree[2].caption}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">🔥</span>
+                        <span className="text-ash font-bold text-xl">{topThree[2].votesCount}</span>
+                        <span className="text-steel text-sm">votes</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              )}
+
+              {/* Full Leaderboard */}
+              {leaderboard.length > 3 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.5 }}
+                  className="mt-8"
+                >
+                  <h3 className="text-xl font-black text-ash mb-4 text-center">
+                    📊 Full Rankings
+                  </h3>
+                  <div className="space-y-2">
+                    {leaderboard.slice(3).map((clip, index) => (
+                      <div
+                        key={clip.id}
+                        className="flex items-center gap-4 p-4 rounded-xl bg-carbon border border-steel/20"
+                      >
+                        <span className="text-steel font-bold text-lg w-8">
+                          #{index + 4}
+                        </span>
+                        <div className="flex-shrink-0 w-12 h-16 rounded-lg overflow-hidden bg-nightfall">
+                          <video
+                            src={clip.videoUrl}
+                            className="w-full h-full object-cover"
+                            muted
+                          />
+                        </div>
+                        <p className="flex-1 text-ash font-medium truncate">{clip.caption}</p>
+                        <div className="flex items-center gap-2">
+                          <span>🔥</span>
+                          <span className="text-ash font-bold">{clip.votesCount}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Next Steps */}
+        {revealed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2 }}
+            className="text-center space-y-4 pt-8"
+          >
+            <p className="text-steel">
+              The Beast Reel will be available tomorrow (Sunday)!
+            </p>
+            <Link href="/">
+              <button className="px-8 py-4 rounded-xl bg-digital-grape text-ash font-bold text-lg hover:scale-105 transition-transform">
+                Back to Feed
+              </button>
+            </Link>
+          </motion.div>
+        )}
       </div>
     </div>
   );

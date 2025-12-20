@@ -1,0 +1,153 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // ==================== USERS ====================
+    // Users can read all users (campus directory)
+    // Users can only write their own profile
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isOwner(userId);
+      allow update, delete: if isOwner(userId);
+    }
+
+    // ==================== MOMENTS (4Real) ====================
+    // Moments visible to everyone (after posting)
+    // Only owner can create/update/delete their moments
+    match /moments/{momentId} {
+      allow read: if true;
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() &&
+                              resource.data.userId == request.auth.uid;
+    }
+
+    // ==================== BEAST WEEKS ====================
+    // Beast Weeks readable by all
+    // Only admins can create/update Beast Weeks
+    match /beast_weeks/{weekId} {
+      allow read: if true;
+      allow create, update: if isAdmin();
+      allow delete: if false; // Never delete weeks
+    }
+
+    // ==================== BEAST CLIPS ====================
+    // Clips readable by all (public competition)
+    // One submission per user per week
+    // Only owner can update/delete their clip
+    match /beast_clips/{clipId} {
+      allow read: if true;
+
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      // Ensure only one submission per user per week
+                      !exists(/databases/$(database)/documents/beast_clips/{anyClip}
+                        where anyClip.userId == request.auth.uid &&
+                        anyClip.beastWeekId == request.resource.data.beastWeekId);
+
+      allow update: if isAuthenticated() &&
+                      resource.data.userId == request.auth.uid;
+
+      allow delete: if isAuthenticated() &&
+                      resource.data.userId == request.auth.uid;
+    }
+
+    // ==================== BEAST VOTES ====================
+    // Votes private - users can only read their own votes
+    // One vote per user per week enforced
+    match /beast_votes/{voteId} {
+      allow read: if isAuthenticated() &&
+                    resource.data.userId == request.auth.uid;
+
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      // Ensure only one vote per user per week
+                      !exists(/databases/$(database)/documents/beast_votes/{anyVote}
+                        where anyVote.userId == request.auth.uid &&
+                        anyVote.beastWeekId == request.resource.data.beastWeekId);
+
+      allow update, delete: if false; // Votes are immutable
+    }
+
+    // ==================== HYPE POLLS ====================
+    // Polls readable by all
+    // Only admins or Cloud Functions can create polls
+    match /hype_polls/{pollId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if false; // Polls are immutable once created
+      allow delete: if false;
+    }
+
+    // ==================== POLL VOTES ====================
+    // Poll votes are anonymous and private
+    // Users can only read their own votes
+    // One vote per user per poll enforced
+    match /poll_votes/{voteId} {
+      allow read: if isAuthenticated() &&
+                    resource.data.userId == request.auth.uid;
+
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid &&
+                      request.resource.data.isAnonymous == true &&
+                      // Ensure only one vote per user per poll
+                      !exists(/databases/$(database)/documents/poll_votes/{anyVote}
+                        where anyVote.userId == request.auth.uid &&
+                        anyVote.pollId == request.resource.data.pollId);
+
+      allow update, delete: if false; // Votes are immutable
+    }
+
+    // ==================== REALMOJI REACTIONS ====================
+    // Reactions visible to everyone
+    // Users can create reactions on any moment
+    // Users can only delete their own reactions
+    match /realmoji_reactions/{reactionId} {
+      allow read: if true;
+
+      allow create: if isAuthenticated() &&
+                      request.resource.data.userId == request.auth.uid;
+
+      allow delete: if isAuthenticated() &&
+                      resource.data.userId == request.auth.uid;
+
+      allow update: if false; // Reactions are immutable
+    }
+
+    // ==================== NOTIFICATIONS ====================
+    // Users can only read their own notifications
+    // System/Cloud Functions can create notifications
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() &&
+                    resource.data.recipientId == request.auth.uid;
+
+      allow create: if isAuthenticated();
+
+      allow update: if isAuthenticated() &&
+                      resource.data.recipientId == request.auth.uid;
+
+      allow delete: if isAuthenticated() &&
+                      resource.data.recipientId == request.auth.uid;
+    }
+
+    // Deny all other collections by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
