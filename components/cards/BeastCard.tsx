@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getTimelineSteps, getPhaseCountdown } from '@/lib/beastPhases';
+import { PHASE_CONFIG } from '@/lib/beastPhaseConfig';
 
 interface BeastCardProps {
   beastWeek: BeastWeek;
@@ -70,6 +71,7 @@ const phaseConfig: Record<BeastPhase, {
 export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
   const [isPressed, setIsPressed] = useState(false);
   const config = phaseConfig[beastWeek.phase];
+  const phaseInfo = PHASE_CONFIG[beastWeek.phase]; // Dynamic phase content
   const timelineSteps = getTimelineSteps(beastWeek);
   const countdown = getPhaseCountdown(beastWeek);
 
@@ -249,7 +251,7 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            {beastWeek.description}
+            {phaseInfo.description}
           </motion.p>
 
           {/* Prize Display - Shows combined value and sponsor */}
@@ -328,7 +330,7 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
             transition={{ delay: 0.3 }}
           >
             <span className="text-sm text-ash/80 font-medium">
-              {config.subtitle}
+              {phaseInfo.subtext}
             </span>
             {beastWeek.phase === 'SUBMISSIONS_OPEN' && (
               <motion.span
