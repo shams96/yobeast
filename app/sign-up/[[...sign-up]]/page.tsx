@@ -73,7 +73,7 @@ export default function SignUpPage() {
         {/* Sign Up Form */}
         <div className="bg-carbon rounded-2xl border border-ash/10 p-8 shadow-xl">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-black text-electricCoral mb-2">
+            <h1 className="text-2xl font-black text-electric-coral mb-2">
               Create Account
             </h1>
             <p className="text-ash/60 text-sm">Join your campus community</p>
@@ -97,7 +97,7 @@ export default function SignUpPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electricCoral focus:border-transparent"
+                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electric-coral focus:border-transparent"
                 placeholder="John Doe"
               />
             </div>
@@ -112,7 +112,7 @@ export default function SignUpPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electricCoral focus:border-transparent"
+                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electric-coral focus:border-transparent"
                 placeholder="johndoe"
               />
             </div>
@@ -127,7 +127,7 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electricCoral focus:border-transparent"
+                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electric-coral focus:border-transparent"
                 placeholder={selectedInstitution ? `demo@${selectedInstitution.domain}` : 'your@email.edu'}
               />
             </div>
@@ -142,7 +142,7 @@ export default function SignUpPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electricCoral focus:border-transparent"
+                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electric-coral focus:border-transparent"
                 placeholder="Enter your password"
               />
             </div>
@@ -150,7 +150,7 @@ export default function SignUpPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-electricCoral text-nightfall font-bold rounded-lg hover:bg-electricCoral/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 bg-electric-coral text-nightfall font-bold rounded-lg hover:bg-electric-coral/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? 'Creating account...' : 'Sign Up'}
             </button>
@@ -160,7 +160,7 @@ export default function SignUpPage() {
           <div className="mt-6 text-center">
             <p className="text-ash/60 text-sm">
               Already have an account?{' '}
-              <Link href="/sign-in" className="text-electricCoral hover:underline font-medium">
+              <Link href="/sign-in" className="text-electric-coral hover:underline font-medium">
                 Sign in
               </Link>
             </p>

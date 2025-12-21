@@ -8,6 +8,7 @@ import RivalryDashboard from './cards/RivalryDashboard';
 import { MentalHealthBanner, FirstTimeEncouragement } from './inclusion/InclusionFeatures';
 import RealsCountdown from './RealsCountdown';
 import { useReals } from '@/context/RealsContext';
+import { useBeastWeekCycle } from '@/context/BeastWeekCycleContext';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -33,10 +34,11 @@ export default function Feed({
 }: FeedProps) {
   const [pollVotes, setPollVotes] = useState<Record<string, string>>({});
   const { canSeeFeed, realsTime } = useReals();
+  const { currentPhase } = useBeastWeekCycle();
   const router = useRouter();
 
   const handleBeastAction = () => {
-    console.log('Beast action clicked:', beastWeek.phase);
+    console.log('Beast action clicked:', currentPhase);
     // Navigation will be implemented in Phase 2
   };
 
@@ -129,12 +131,12 @@ export default function Feed({
         {/* Inclusion Features */}
         <div className="space-y-4 px-4">
           {/* First-Time Encouragement - show during submission phase */}
-          {isFirstTimeSubmitter && beastWeek.phase === 'SUBMISSIONS_OPEN' && (
+          {isFirstTimeSubmitter && currentPhase === 'SUBMISSIONS_OPEN' && (
             <FirstTimeEncouragement userName={userName} />
           )}
 
           {/* Mental Health Resources - show during high-stress phases */}
-          {(beastWeek.phase === 'VOTING_OPEN' || beastWeek.phase === 'FINALE_DAY') && (
+          {(currentPhase === 'VOTING_OPEN' || currentPhase === 'FINALE_DAY') && (
             <MentalHealthBanner />
           )}
         </div>

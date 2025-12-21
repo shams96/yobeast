@@ -40,7 +40,7 @@ export default function SignInPage() {
         <div className="bg-carbon rounded-2xl border border-ash/10 p-8 shadow-xl">
           {/* Logo/Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-black text-electricCoral mb-2">
+            <h1 className="text-3xl font-black text-electric-coral mb-2">
               Yollr Beast™
             </h1>
             <p className="text-ash/60 text-sm">Sign in to your campus</p>
@@ -54,8 +54,8 @@ export default function SignInPage() {
           )}
 
           {/* Demo Accounts Info */}
-          <div className="mb-6 p-4 bg-electricCoral/10 border border-electricCoral/20 rounded-lg">
-            <p className="text-electricCoral text-xs font-medium mb-2">Demo Accounts Available:</p>
+          <div className="mb-6 p-4 bg-electric-coral/10 border border-electric-coral/20 rounded-lg">
+            <p className="text-electric-coral text-xs font-medium mb-2">Demo Accounts Available:</p>
             <ul className="text-ash/60 text-xs space-y-1">
               <li>• demo@harvard.edu</li>
               <li>• demo@mit.edu</li>
@@ -78,7 +78,7 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electricCoral focus:border-transparent"
+                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electric-coral focus:border-transparent"
                 placeholder="demo@harvard.edu"
               />
             </div>
@@ -93,7 +93,7 @@ export default function SignInPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electricCoral focus:border-transparent"
+                className="w-full px-4 py-3 bg-nightfall border border-ash/20 rounded-lg text-ash placeholder:text-ash/40 focus:outline-none focus:ring-2 focus:ring-electric-coral focus:border-transparent"
                 placeholder="Enter your password"
               />
             </div>
@@ -101,7 +101,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-electricCoral text-nightfall font-bold rounded-lg hover:bg-electricCoral/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 bg-electric-coral text-nightfall font-bold rounded-lg hover:bg-electric-coral/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
@@ -111,7 +111,7 @@ export default function SignInPage() {
           <div className="mt-6 text-center">
             <p className="text-ash/60 text-sm">
               Don't have an account?{' '}
-              <Link href="/sign-up" className="text-electricCoral hover:underline font-medium">
+              <Link href="/sign-up" className="text-electric-coral hover:underline font-medium">
                 Sign up
               </Link>
             </p>
