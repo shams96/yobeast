@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { getTimelineSteps, getPhaseCountdown } from '@/lib/beastPhases';
 import { PHASE_CONFIG } from '@/lib/beastPhaseConfig';
+import { useBeastWeekCycle } from '@/context/BeastWeekCycleContext';
 
 interface BeastCardProps {
   beastWeek: BeastWeek;
@@ -70,8 +71,9 @@ const phaseConfig: Record<BeastPhase, {
 
 export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
   const [isPressed, setIsPressed] = useState(false);
-  const config = phaseConfig[beastWeek.phase];
-  const phaseInfo = PHASE_CONFIG[beastWeek.phase]; // Dynamic phase content
+  const { currentPhase } = useBeastWeekCycle(); // Get live phase from context
+  const config = phaseConfig[currentPhase];
+  const phaseInfo = PHASE_CONFIG[currentPhase]; // Dynamic phase content
   const timelineSteps = getTimelineSteps(beastWeek);
   const countdown = getPhaseCountdown(beastWeek);
 
@@ -207,13 +209,13 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
             </div>
 
             {/* Live Action Banner */}
-            {(beastWeek.phase === 'SUBMISSIONS_OPEN' || beastWeek.phase === 'VOTING_OPEN') && (
+            {(currentPhase === 'SUBMISSIONS_OPEN' || currentPhase === 'VOTING_OPEN') && (
               <motion.div
                 className={`
                   flex items-center justify-between gap-3
                   px-3 py-2 rounded-xl
                   border-2
-                  ${beastWeek.phase === 'SUBMISSIONS_OPEN'
+                  ${currentPhase === 'SUBMISSIONS_OPEN'
                     ? 'bg-electric-coral/20 border-electric-coral/40'
                     : 'bg-signal-lime/20 border-signal-lime/40'
                   }
@@ -226,13 +228,13 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
                   <motion.div
                     className={`
                       w-1.5 h-1.5 rounded-full
-                      ${beastWeek.phase === 'SUBMISSIONS_OPEN' ? 'bg-electric-coral' : 'bg-signal-lime'}
+                      ${currentPhase === 'SUBMISSIONS_OPEN' ? 'bg-electric-coral' : 'bg-signal-lime'}
                     `}
                     animate={{ opacity: [1, 0.3, 1] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   />
                   <span className="text-xs font-bold text-nightfall uppercase tracking-wide">
-                    {beastWeek.phase === 'SUBMISSIONS_OPEN' ? '🎬 LIVE: Submit Clips' : '🔥 LIVE: Vote Now'}
+                    {currentPhase === 'SUBMISSIONS_OPEN' ? '🎬 LIVE: Submit Clips' : '🔥 LIVE: Vote Now'}
                   </span>
                 </div>
                 {countdown && (
@@ -332,7 +334,7 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
             <span className="text-sm text-ash/80 font-medium">
               {phaseInfo.subtext}
             </span>
-            {beastWeek.phase === 'SUBMISSIONS_OPEN' && (
+            {currentPhase === 'SUBMISSIONS_OPEN' && (
               <motion.span
                 className="px-3 py-1 rounded-full bg-signal-lime/30 border border-signal-lime/50 text-nightfall text-xs font-bold"
                 animate={{ scale: [1, 1.05, 1] }}
@@ -346,13 +348,13 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
           {/* CTA Button - Solid with clean design */}
           <Link
             href={
-              beastWeek.phase === 'BEAST_REVEAL'
+              currentPhase === 'BEAST_REVEAL'
                 ? '/beast'
-                : beastWeek.phase === 'SUBMISSIONS_OPEN'
+                : currentPhase === 'SUBMISSIONS_OPEN'
                 ? '/beast/submit'
-                : beastWeek.phase === 'VOTING_OPEN'
+                : currentPhase === 'VOTING_OPEN'
                 ? '/beast/vote'
-                : beastWeek.phase === 'FINALE_DAY'
+                : currentPhase === 'FINALE_DAY'
                 ? '/beast/finale'
                 : '/beast/reel'
             }
