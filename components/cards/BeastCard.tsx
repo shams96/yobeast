@@ -26,7 +26,7 @@ const phaseConfig: Record<BeastPhase, {
     emoji: '📺',
     title: 'This Week\'s Beast',
     subtitle: 'Submissions open Tue–Wed',
-    cta: 'See How It Works',
+    cta: 'View Full Challenge',
     bgColor: 'bg-digital-grape',
     borderColor: 'border-digital-grape/30',
     accentColor: 'bg-digital-grape/20',
@@ -35,7 +35,7 @@ const phaseConfig: Record<BeastPhase, {
     emoji: '🎬',
     title: 'Submissions Open',
     subtitle: 'Submit by Wed 11:59 PM',
-    cta: 'Submit Your Beast Clip',
+    cta: '📹 Submit Video Now',
     bgColor: 'bg-electric-coral',
     borderColor: 'border-electric-coral/30',
     accentColor: 'bg-electric-coral/20',
@@ -44,7 +44,7 @@ const phaseConfig: Record<BeastPhase, {
     emoji: '🔥',
     title: 'Finalists Locked',
     subtitle: 'Your vote decides the champion',
-    cta: 'Vote in Yollr Beast',
+    cta: '🗳️ Vote for Champion',
     bgColor: 'bg-signal-lime',
     borderColor: 'border-signal-lime/30',
     accentColor: 'bg-signal-lime/20',
@@ -53,7 +53,7 @@ const phaseConfig: Record<BeastPhase, {
     emoji: '🎪',
     title: 'Beast Finale Today',
     subtitle: 'Live watch party at 6 PM',
-    cta: 'Enter Beast Finale',
+    cta: '🏆 Watch Live Finale',
     bgColor: 'bg-future-dusk',
     borderColor: 'border-future-dusk/30',
     accentColor: 'bg-future-dusk/20',
@@ -62,7 +62,7 @@ const phaseConfig: Record<BeastPhase, {
     emoji: '🎬',
     title: 'Beast Reel is Live',
     subtitle: 'Relive the best clips',
-    cta: 'Watch Beast Reel',
+    cta: '🎞️ Watch Highlights',
     bgColor: 'bg-ice-cyan',
     borderColor: 'border-ice-cyan/30',
     accentColor: 'bg-ice-cyan/20',
@@ -71,11 +71,16 @@ const phaseConfig: Record<BeastPhase, {
 
 export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
   const [isPressed, setIsPressed] = useState(false);
-  const { currentPhase } = useBeastWeekCycle(); // Get live phase from context
+  const { currentPhase, submissions, leaderboard } = useBeastWeekCycle(); // Get live stats from context
   const config = phaseConfig[currentPhase];
   const phaseInfo = PHASE_CONFIG[currentPhase]; // Dynamic phase content
   const timelineSteps = getTimelineSteps(beastWeek);
   const countdown = getPhaseCountdown(beastWeek);
+
+  // Real-time stats
+  const submissionCount = submissions.length;
+  const totalVotes = leaderboard.reduce((sum, clip) => sum + clip.votesCount, 0);
+  const topVotes = leaderboard[0]?.votesCount || 0;
 
   return (
     <motion.div
@@ -256,92 +261,229 @@ export default function BeastCard({ beastWeek, onAction }: BeastCardProps) {
             {phaseInfo.description}
           </motion.p>
 
-          {/* Prize Display - Shows combined value and sponsor */}
+          {/* Phase-Specific Content - ALL INFO VISIBLE */}
           <motion.div
             className="space-y-3"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
           >
-            {/* Total Prize Value */}
-            <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-nightfall/40 border border-signal-lime/30">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🏆</span>
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-ash/80 uppercase tracking-wide">
-                    Total Prize Value
-                  </span>
-                  <span className="text-lg font-black text-signal-lime">
-                    ${beastWeek.prize.combinedValue}
-                  </span>
+            {/* MONDAY REVEAL - Show everything immediately */}
+            {currentPhase === 'BEAST_REVEAL' && (
+              <>
+                {/* Prize */}
+                <div className="px-4 py-3 rounded-xl bg-nightfall/40 border border-signal-lime/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">💰</span>
+                    <span className="text-xs font-semibold text-ash/80 uppercase tracking-wide">
+                      Grand Prize
+                    </span>
+                  </div>
+                  <div className="text-2xl font-black text-signal-lime">
+                    ${beastWeek.prize.cashAmount} Cash Prize
+                  </div>
+                  {beastWeek.prize.sponsors && beastWeek.prize.sponsors.length > 0 && (
+                    <div className="text-xs text-ash/70 mt-1">
+                      + {beastWeek.prize.sponsors[0].prizeDescription}
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="text-xs text-ash/70">Cash Prize</div>
-                <div className="text-sm font-bold text-ash">${beastWeek.prize.cashAmount}</div>
-              </div>
-            </div>
 
-            {/* Sponsor Display */}
-            {beastWeek.prize.sponsors && beastWeek.prize.sponsors.length > 0 && (
-              <div className="px-4 py-3 rounded-xl bg-electric-coral/10 border border-electric-coral/30">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-white/90 flex items-center justify-center overflow-hidden">
-                    <span className="text-2xl">🍪</span>
+                {/* Quick Rules */}
+                <div className="px-4 py-3 rounded-xl bg-nightfall/40 border border-ash/20">
+                  <div className="text-xs font-bold text-ash/80 uppercase tracking-wide mb-2">
+                    📋 Quick Rules
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-electric-coral uppercase tracking-wide mb-0.5">
-                      Bonus Prize Sponsor
-                    </div>
-                    <div className="text-sm font-bold text-ash mb-1">
-                      {beastWeek.prize.sponsors[0].businessName}
-                    </div>
-                    <div className="text-xs text-ash/80 leading-relaxed">
-                      {beastWeek.prize.sponsors[0].prizeDescription}
-                    </div>
-                    <div className="text-xs text-ash/60 mt-1">
-                      Value: ${beastWeek.prize.sponsors[0].estimatedValue}
-                    </div>
+                  <div className="space-y-1 text-xs text-ash/90">
+                    <div>• {beastWeek.maxDuration}s max video length</div>
+                    <div>• Original content only</div>
+                    <div>• One submission per student</div>
                   </div>
                 </div>
-              </div>
+
+                {/* Next Action */}
+                <div className="px-3 py-2 rounded-xl bg-electric-coral/20 border border-electric-coral/40">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">⏰</span>
+                    <span className="text-xs font-semibold text-nightfall">
+                      Submissions open Tuesday at midnight ({countdown})
+                    </span>
+                  </div>
+                </div>
+              </>
             )}
 
-            {/* Metadata Chips */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="px-3 py-1.5 rounded-full bg-nightfall/40 border border-ash/20 flex items-center gap-1.5">
-                <span className="text-sm">⏱️</span>
-                <span className="text-sm font-semibold text-ash/90">
-                  {beastWeek.maxDuration}s max
-                </span>
-              </div>
-              <div className="px-3 py-1.5 rounded-full bg-nightfall/40 border border-ash/20 flex items-center gap-1.5">
-                <span className="text-sm">📅</span>
-                <span className="text-sm font-semibold text-ash/90">
-                  Weekly
-                </span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Status Line with badge */}
-          <motion.div
-            className="flex items-center justify-between pt-1"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <span className="text-sm text-ash/80 font-medium">
-              {phaseInfo.subtext}
-            </span>
+            {/* TUESDAY-WEDNESDAY SUBMIT - Direct action focus */}
             {currentPhase === 'SUBMISSIONS_OPEN' && (
-              <motion.span
-                className="px-3 py-1 rounded-full bg-signal-lime/30 border border-signal-lime/50 text-nightfall text-xs font-bold"
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                143 clips submitted
-              </motion.span>
+              <>
+                {/* Deadline Countdown */}
+                <div className="px-4 py-3 rounded-xl bg-electric-coral/20 border border-electric-coral/40">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">⏰</span>
+                      <div>
+                        <div className="text-xs font-semibold text-nightfall/80 uppercase">Deadline</div>
+                        <div className="text-sm font-black text-nightfall">Closes in {countdown}</div>
+                      </div>
+                    </div>
+                    <motion.div
+                      className="px-3 py-1.5 rounded-full bg-signal-lime text-nightfall text-xs font-bold"
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      OPEN NOW
+                    </motion.div>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-signal-lime">{submissionCount}</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">Submitted</div>
+                  </div>
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-electric-coral">{beastWeek.maxDuration}s</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">Max Length</div>
+                  </div>
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-signal-lime">${beastWeek.prize.cashAmount}</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">Prize</div>
+                  </div>
+                </div>
+
+                {/* Quick Reminder */}
+                <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20">
+                  <div className="text-xs text-ash/80">
+                    💡 <span className="font-semibold">One submission per student</span> • Original content only
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* THURSDAY-FRIDAY VOTE - Voting focus */}
+            {currentPhase === 'VOTING_OPEN' && (
+              <>
+                {/* Deadline */}
+                <div className="px-4 py-3 rounded-xl bg-signal-lime/20 border border-signal-lime/40">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🔥</span>
+                      <div>
+                        <div className="text-xs font-semibold text-nightfall/80 uppercase">Voting Ends</div>
+                        <div className="text-sm font-black text-nightfall">In {countdown}</div>
+                      </div>
+                    </div>
+                    <motion.div
+                      className="px-3 py-1.5 rounded-full bg-electric-coral text-nightfall text-xs font-bold"
+                      animate={{ scale: [1, 1.05, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      VOTE NOW
+                    </motion.div>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-signal-lime">{submissionCount}</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">Submissions</div>
+                  </div>
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-electric-coral">{totalVotes}</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">Votes Cast</div>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20">
+                  <div className="text-xs text-ash/80">
+                    🗳️ <span className="font-semibold">One vote per student</span> • Help crown the champion
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* SATURDAY FINALE - Winner focus */}
+            {currentPhase === 'FINALE_DAY' && (
+              <>
+                {/* Live Banner */}
+                <div className="px-4 py-3 rounded-xl bg-electric-coral/20 border border-electric-coral/40">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-electric-coral"
+                        animate={{ opacity: [1, 0.3, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      />
+                      <span className="text-sm font-black text-nightfall uppercase tracking-wide">
+                        🏆 Finale Live at 6:00 PM
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Final Stats */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-signal-lime">{submissionCount}</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">Finalists</div>
+                  </div>
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-electric-coral">{totalVotes}</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">Total Votes</div>
+                  </div>
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-signal-lime">${beastWeek.prize.cashAmount}</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">Prize</div>
+                  </div>
+                </div>
+
+                {/* Countdown to Finale */}
+                {countdown && (
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20">
+                    <div className="text-xs text-ash/80">
+                      ⏰ Finale starts in <span className="font-bold">{countdown}</span> • Don't miss it!
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* SUNDAY REEL - Highlights focus */}
+            {currentPhase === 'COOLDOWN_REEL' && (
+              <>
+                {/* Champion Showcase */}
+                <div className="px-4 py-3 rounded-xl bg-signal-lime/20 border border-signal-lime/40">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">👑</span>
+                    <div className="flex-1">
+                      <div className="text-xs font-semibold text-nightfall/80 uppercase">This Week's Champion</div>
+                      <div className="text-sm font-black text-nightfall">Watch the winning video</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-signal-lime">Top 5</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">In Reel</div>
+                  </div>
+                  <div className="px-3 py-2 rounded-xl bg-nightfall/40 border border-ash/20 text-center">
+                    <div className="text-lg font-black text-electric-coral">${beastWeek.prize.cashAmount}</div>
+                    <div className="text-[9px] text-ash/70 font-semibold uppercase">Awarded</div>
+                  </div>
+                </div>
+
+                {/* Next Challenge */}
+                <div className="px-3 py-2 rounded-xl bg-electric-coral/20 border border-electric-coral/40">
+                  <div className="text-xs text-nightfall font-semibold">
+                    🎬 Next challenge reveals Monday ({countdown})
+                  </div>
+                </div>
+              </>
             )}
           </motion.div>
 
