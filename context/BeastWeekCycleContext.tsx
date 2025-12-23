@@ -574,37 +574,63 @@ function getNextMonday(from: Date): Date {
 }
 
 /**
- * Calculate sequential week number since app launch
- * Week 1 = First week of Beast competition (starting December 23, 2024)
- * This gives users context: "This is week 3 of the competition"
- * instead of confusing ISO week numbers like "W52"
+ * Calculate academic week number following semester calendar
+ * Resets each semester to match student mental model
+ *
+ * Academic Year Structure:
+ * - Fall Semester: Week 1-16 (late August - mid December)
+ * - Spring Semester: Week 1-16 (mid January - early May)
+ * - Summer Session: Week 1-12 (late May - mid August)
+ *
+ * This matches how students think: "It's week 5 of fall semester"
  */
 function getWeekNumber(date: Date): number {
-  // App launch date (first Beast Week Monday)
-  const APP_LAUNCH_DATE = new Date('2024-12-23T00:00:00');
+  const year = date.getFullYear();
 
-  // Get the Monday of the week for the given date
-  const currentMonday = getMondayOfWeek(date);
+  // Define semester start dates
+  // Fall: Last Monday of August
+  const fallStart = getLastMondayOfMonth(year, 7); // August (month 7)
 
-  // Calculate weeks since launch
-  const daysSinceLaunch = Math.floor(
-    (currentMonday.getTime() - APP_LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  // Spring: Second Monday of January
+  const springStart = getNthMondayOfMonth(year, 0, 2); // January (month 0), 2nd Monday
 
-  const weeksSinceLaunch = Math.floor(daysSinceLaunch / 7);
+  // Summer: Third Monday of May
+  const summerStart = getNthMondayOfMonth(year, 4, 3); // May (month 4), 3rd Monday
 
-  // Week 1 is the launch week, so add 1
-  return weeksSinceLaunch + 1;
+  // Determine current semester and calculate week
+  if (date >= fallStart || date < springStart) {
+    // Fall Semester or Winter Break
+    const start = date >= fallStart ? fallStart : getLastMondayOfMonth(year - 1, 7);
+    return Math.floor((date.getTime() - start.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  } else if (date >= springStart && date < summerStart) {
+    // Spring Semester
+    return Math.floor((date.getTime() - springStart.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  } else {
+    // Summer Session
+    return Math.floor((date.getTime() - summerStart.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  }
 }
 
 /**
- * Get the Monday of the week for any given date
+ * Get the last Monday of a given month
  */
-function getMondayOfWeek(date: Date): Date {
-  const day = date.getDay();
-  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-  const monday = new Date(date);
-  monday.setDate(diff);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
+function getLastMondayOfMonth(year: number, month: number): Date {
+  const lastDay = new Date(year, month + 1, 0); // Last day of month
+  const dayOfWeek = lastDay.getDay();
+  const daysToMonday = (dayOfWeek + 6) % 7; // Days back to last Monday
+  const lastMonday = new Date(year, month + 1, 0 - daysToMonday);
+  lastMonday.setHours(0, 0, 0, 0);
+  return lastMonday;
+}
+
+/**
+ * Get the Nth Monday of a given month (1st, 2nd, 3rd, etc.)
+ */
+function getNthMondayOfMonth(year: number, month: number, n: number): Date {
+  const firstDay = new Date(year, month, 1);
+  const dayOfWeek = firstDay.getDay();
+  const daysUntilMonday = (8 - dayOfWeek) % 7 || 7; // Days to first Monday
+  const nthMonday = new Date(year, month, 1 + daysUntilMonday + (n - 1) * 7);
+  nthMonday.setHours(0, 0, 0, 0);
+  return nthMonday;
 }
