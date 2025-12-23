@@ -573,8 +573,38 @@ function getNextMonday(from: Date): Date {
   return monday;
 }
 
+/**
+ * Calculate sequential week number since app launch
+ * Week 1 = First week of Beast competition (starting December 23, 2024)
+ * This gives users context: "This is week 3 of the competition"
+ * instead of confusing ISO week numbers like "W52"
+ */
 function getWeekNumber(date: Date): number {
-  const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-  const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
-  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+  // App launch date (first Beast Week Monday)
+  const APP_LAUNCH_DATE = new Date('2024-12-23T00:00:00');
+
+  // Get the Monday of the week for the given date
+  const currentMonday = getMondayOfWeek(date);
+
+  // Calculate weeks since launch
+  const daysSinceLaunch = Math.floor(
+    (currentMonday.getTime() - APP_LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  const weeksSinceLaunch = Math.floor(daysSinceLaunch / 7);
+
+  // Week 1 is the launch week, so add 1
+  return weeksSinceLaunch + 1;
+}
+
+/**
+ * Get the Monday of the week for any given date
+ */
+function getMondayOfWeek(date: Date): Date {
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+  const monday = new Date(date);
+  monday.setDate(diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
 }
