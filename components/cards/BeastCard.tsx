@@ -36,9 +36,9 @@ const phaseConfig: Record<BeastPhase, {
     title: 'Submissions Open',
     subtitle: 'Submit by Wed 11:59 PM',
     cta: '📹 Submit Video Now',
-    bgColor: 'bg-electric-coral',
-    borderColor: 'border-electric-coral/30',
-    accentColor: 'bg-electric-coral/20',
+    bgColor: 'bg-gradient-to-br from-digital-grape to-electric-coral',
+    borderColor: 'border-digital-grape/30',
+    accentColor: 'bg-digital-grape/20',
   },
   VOTING_OPEN: {
     emoji: '🔥',

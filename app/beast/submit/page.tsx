@@ -12,6 +12,7 @@ import {
   getValidationSummary,
   type ValidationResult
 } from '@/lib/videoValidation';
+import VideoRecorder from '@/components/VideoRecorder';
 
 export default function BeastSubmitPage() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function BeastSubmitPage() {
   const [caption, setCaption] = useState('');
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [showRecorder, setShowRecorder] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!currentWeek) {
@@ -52,6 +54,53 @@ export default function BeastSubmitPage() {
       </div>
     );
   }
+
+  const handleRecordingComplete = async (videoBlob: Blob, videoUrl: string) => {
+    setShowRecorder(false);
+
+    // Convert Blob to File
+    const file = new File([videoBlob], `beast-${Date.now()}.webm`, { type: 'video/webm' });
+
+    // Set preview immediately for UX
+    setVideoFile(file);
+    setVideoPreview(videoUrl);
+    setIsValidating(true);
+
+    // Run validation
+    try {
+      const result = await validateBeastSubmission(
+        file,
+        currentWeek.id,
+        currentWeek.maxDuration
+      );
+      setValidationResult(result);
+
+      // Auto-submit if valid
+      if (result.valid && result.metadata?.hash) {
+        storeVideoHash(result.metadata.hash, currentWeek.id);
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          submitVideo({
+            videoUrl: reader.result as string,
+            caption: caption.trim() || `Week ${currentWeek.weekNumber} - ${currentWeek.theme}`,
+            duration: result.metadata?.duration || currentWeek.maxDuration
+          });
+          router.push('/');
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+      setValidationResult({
+        valid: false,
+        errors: ['Failed to validate video. Please try again.'],
+        warnings: []
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -114,6 +163,17 @@ export default function BeastSubmitPage() {
     reader.readAsDataURL(videoFile);
   };
 
+  // Show Video Recorder
+  if (showRecorder) {
+    return (
+      <VideoRecorder
+        maxDuration={currentWeek.maxDuration}
+        onRecordingComplete={handleRecordingComplete}
+        onCancel={() => setShowRecorder(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-nightfall pb-20">
       <div className="sticky top-0 z-10 bg-nightfall/95 backdrop-blur-lg border-b border-steel/20">
@@ -158,10 +218,33 @@ export default function BeastSubmitPage() {
         </div>
 
         {!videoPreview ? (
-          <div>
+          <div className="space-y-3">
+            {/* PRIMARY CTA - Record Video */}
+            <button
+              onClick={() => setShowRecorder(true)}
+              className="w-full bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall font-bold text-lg px-8 py-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-3 shadow-elevated"
+            >
+              <span className="text-3xl">🎥</span>
+              <span>Record Video Now</span>
+            </button>
+
+            {/* SECONDARY CTA - Upload */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-steel/20"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-3 bg-nightfall text-steel font-semibold">OR</span>
+              </div>
+            </div>
+
             <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
-            <button onClick={() => fileInputRef.current?.click()} className="w-full bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall font-bold text-lg px-8 py-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-3">
-              <span className="text-2xl">📂</span><span>Select Video</span>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full bg-carbon border-2 border-steel/20 text-ash font-semibold text-base px-6 py-4 rounded-2xl hover:border-ash/40 transition-colors flex items-center justify-center gap-3"
+            >
+              <span className="text-2xl">📂</span>
+              <span>Upload Existing Video</span>
             </button>
           </div>
         ) : (
