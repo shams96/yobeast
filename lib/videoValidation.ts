@@ -57,41 +57,72 @@ export async function getVideoMetadata(file: File): Promise<VideoMetadata> {
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
     video.preload = 'metadata';
+    video.muted = true; // Required for autoplay in some browsers
 
-    video.onloadedmetadata = () => {
+    let resolved = false;
+
+    const cleanup = () => {
+      if (video.src) {
+        window.URL.revokeObjectURL(video.src);
+      }
+    };
+
+    const handleSuccess = () => {
+      if (resolved) return;
+      resolved = true;
+
       // Validate duration is a valid number
       const duration = video.duration;
 
-      if (!isFinite(duration) || isNaN(duration)) {
-        window.URL.revokeObjectURL(video.src);
-        reject(new Error('Video duration could not be determined'));
+      if (!isFinite(duration) || isNaN(duration) || duration === 0) {
+        cleanup();
+        reject(new Error('Video duration could not be determined. The video may be corrupted or still processing.'));
         return;
       }
 
-      window.URL.revokeObjectURL(video.src);
+      cleanup();
       resolve({
         duration: duration,
-        width: video.videoWidth,
-        height: video.videoHeight,
+        width: video.videoWidth || 1920,
+        height: video.videoHeight || 1080,
         fileSize: file.size,
         format: file.type
       });
     };
 
-    video.onerror = () => {
-      window.URL.revokeObjectURL(video.src);
-      reject(new Error('Failed to load video metadata'));
+    video.onloadedmetadata = handleSuccess;
+
+    // Some browsers need additional event listeners for WebM
+    video.oncanplay = () => {
+      if (!resolved && video.duration && isFinite(video.duration)) {
+        handleSuccess();
+      }
     };
 
-    // Timeout after 5 seconds
-    setTimeout(() => {
-      if (video.readyState < 1) {
-        window.URL.revokeObjectURL(video.src);
-        reject(new Error('Video metadata loading timed out'));
-      }
-    }, 5000);
+    video.onerror = (e) => {
+      if (resolved) return;
+      resolved = true;
+      cleanup();
+      reject(new Error('Failed to load video metadata. Please ensure the video is valid.'));
+    };
 
-    video.src = URL.createObjectURL(file);
+    // Timeout after 8 seconds (longer for WebM processing)
+    const timeout = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      cleanup();
+      reject(new Error('Video metadata loading timed out. The file may be too large or corrupted.'));
+    }, 8000);
+
+    try {
+      video.src = URL.createObjectURL(file);
+      // Trigger load
+      video.load();
+    } catch (error) {
+      clearTimeout(timeout);
+      cleanup();
+      reject(new Error('Failed to create video preview. Please try again.'));
+    }
   });
 }
 

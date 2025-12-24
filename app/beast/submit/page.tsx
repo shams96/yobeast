@@ -66,6 +66,9 @@ export default function BeastSubmitPage() {
     setVideoPreview(videoUrl);
     setIsValidating(true);
 
+    // Small delay to ensure blob is fully ready
+    await new Promise(resolve => setTimeout(resolve, 300));
+
     // Run validation
     try {
       const result = await validateBeastSubmission(
@@ -94,7 +97,7 @@ export default function BeastSubmitPage() {
       console.error('Validation error:', error);
       setValidationResult({
         valid: false,
-        errors: ['Failed to validate video. Please try again.'],
+        errors: [(error as Error).message || 'Failed to validate video. Please try again.'],
         warnings: []
       });
     } finally {
