@@ -360,7 +360,7 @@ export default function BeastSubmitPage() {
                     {validationResult.metadata && (
                       <div className="mt-2 space-y-1">
                         <p className="text-xs text-steel">
-                          Duration: {formatDuration(validationResult.metadata.duration)} / {currentWeek.maxDuration}s
+                          Duration: {isFinite(validationResult.metadata.duration) ? formatDuration(validationResult.metadata.duration) : 'Processing...'} / {currentWeek.maxDuration}s
                         </p>
                         <p className="text-xs text-steel">
                           Size: {formatFileSize(validationResult.metadata.fileSize)} / 100MB

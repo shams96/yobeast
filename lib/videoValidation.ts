@@ -59,9 +59,18 @@ export async function getVideoMetadata(file: File): Promise<VideoMetadata> {
     video.preload = 'metadata';
 
     video.onloadedmetadata = () => {
+      // Validate duration is a valid number
+      const duration = video.duration;
+
+      if (!isFinite(duration) || isNaN(duration)) {
+        window.URL.revokeObjectURL(video.src);
+        reject(new Error('Video duration could not be determined'));
+        return;
+      }
+
       window.URL.revokeObjectURL(video.src);
       resolve({
-        duration: video.duration,
+        duration: duration,
         width: video.videoWidth,
         height: video.videoHeight,
         fileSize: file.size,
@@ -70,8 +79,17 @@ export async function getVideoMetadata(file: File): Promise<VideoMetadata> {
     };
 
     video.onerror = () => {
+      window.URL.revokeObjectURL(video.src);
       reject(new Error('Failed to load video metadata'));
     };
+
+    // Timeout after 5 seconds
+    setTimeout(() => {
+      if (video.readyState < 1) {
+        window.URL.revokeObjectURL(video.src);
+        reject(new Error('Video metadata loading timed out'));
+      }
+    }, 5000);
 
     video.src = URL.createObjectURL(file);
   });

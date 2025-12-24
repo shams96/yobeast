@@ -165,19 +165,19 @@ export default function VideoRecorder({ maxDuration, onRecordingComplete, onCanc
           className="w-full h-full object-cover"
         />
 
-        {/* Overlay UI */}
-        <div className="absolute inset-0 flex flex-col">
-          {/* Top Bar - Cancel Button */}
-          <div className="flex items-center justify-between px-4 py-6 bg-gradient-to-b from-nightfall/80 to-transparent">
+        {/* Overlay UI - Transparent */}
+        <div className="absolute inset-0 flex flex-col pointer-events-none">
+          {/* Top Bar - Minimal Transparent Badge */}
+          <div className="flex items-center justify-between px-6 py-6">
             <button
               onClick={handleCancel}
-              className="px-4 py-2 rounded-xl bg-carbon/80 backdrop-blur-sm border border-steel/20 text-ash font-semibold hover:bg-carbon transition-colors"
+              className="px-4 py-2 rounded-full bg-nightfall/60 backdrop-blur-md border border-ash/20 text-ash font-semibold hover:bg-nightfall/80 transition-all pointer-events-auto"
             >
               Cancel
             </button>
-            <div className="px-4 py-2 rounded-xl bg-nightfall/80 backdrop-blur-sm border border-steel/20">
-              <span className="text-xs font-bold text-ash uppercase tracking-wide">
-                Beast Week Submission
+            <div className="px-4 py-2 rounded-full bg-nightfall/60 backdrop-blur-md border border-digital-grape/30">
+              <span className="text-xs font-bold text-ash/90 uppercase tracking-wider">
+                BEAST WEEK SUBMISSION
               </span>
             </div>
           </div>
@@ -216,63 +216,63 @@ export default function VideoRecorder({ maxDuration, onRecordingComplete, onCanc
                 </motion.div>
               )}
 
-              {/* RECORDING - Pulsing Red Dot */}
+              {/* RECORDING - Minimal Transparent Badge */}
               {state === 'RECORDING' && (
                 <motion.div
                   key="recording"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-electric-coral/90 backdrop-blur-sm"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-electric-coral/30 backdrop-blur-md border border-electric-coral/50"
                 >
                   <motion.div
-                    className="w-4 h-4 rounded-full bg-white"
-                    animate={{ opacity: [1, 0.3, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                    className="w-3 h-3 rounded-full bg-electric-coral"
+                    animate={{ opacity: [1, 0.4, 1] }}
+                    transition={{ duration: 1.2, repeat: Infinity }}
                   />
-                  <span className="text-xl font-black text-white uppercase tracking-wide">
-                    Recording
+                  <span className="text-base font-bold text-white uppercase tracking-wide">
+                    RECORDING
                   </span>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Bottom Bar - Timer and Progress */}
-          <div className="px-4 py-6 bg-gradient-to-t from-nightfall/80 to-transparent">
+          {/* Bottom Bar - Transparent Timer and Progress */}
+          <div className="px-6 pb-8">
             <AnimatePresence>
               {state === 'RECORDING' && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="max-w-md mx-auto space-y-4"
+                  className="max-w-sm mx-auto space-y-4"
                 >
-                  {/* Time Display */}
-                  <div className="text-center">
-                    <div className="text-5xl font-black text-signal-lime tabular-nums">
+                  {/* Time Display - Transparent */}
+                  <div className="text-center px-6 py-4 rounded-2xl bg-nightfall/50 backdrop-blur-md border border-signal-lime/30">
+                    <div className="text-5xl font-black text-signal-lime tabular-nums drop-shadow-lg">
                       {recordingTime}s
                     </div>
-                    <div className="text-sm text-steel mt-1">
+                    <div className="text-xs text-ash/70 mt-1 font-semibold">
                       of {maxDuration} seconds
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
-                  <div className="relative h-2 rounded-full bg-carbon/50 overflow-hidden">
+                  {/* Progress Bar - Transparent */}
+                  <div className="relative h-2 rounded-full bg-nightfall/40 backdrop-blur-sm border border-ash/20 overflow-hidden">
                     <motion.div
-                      className="absolute inset-y-0 left-0 bg-signal-lime rounded-full"
+                      className="absolute inset-y-0 left-0 bg-signal-lime rounded-full shadow-glow"
                       initial={{ width: '0%' }}
                       animate={{ width: `${(recordingTime / maxDuration) * 100}%` }}
                       transition={{ duration: 0.3 }}
                     />
                   </div>
 
-                  {/* Early Stop Button (optional) */}
+                  {/* Early Stop Button - Transparent */}
                   {recordingTime >= 5 && recordingTime < maxDuration && (
                     <motion.button
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       onClick={stopRecording}
-                      className="w-full px-6 py-3 rounded-xl bg-signal-lime text-nightfall font-bold hover:scale-105 active:scale-95 transition-transform"
+                      className="w-full px-6 py-3 rounded-full bg-signal-lime/90 backdrop-blur-md text-nightfall font-bold hover:bg-signal-lime hover:scale-105 active:scale-95 transition-all pointer-events-auto shadow-elevated"
                     >
                       ✓ Finish Recording ({recordingTime}s)
                     </motion.button>
@@ -280,17 +280,17 @@ export default function VideoRecorder({ maxDuration, onRecordingComplete, onCanc
                 </motion.div>
               )}
 
-              {/* Countdown Instructions */}
+              {/* Countdown Instructions - Transparent */}
               {state === 'COUNTDOWN' && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center"
+                  className="text-center px-6 py-4 rounded-2xl bg-nightfall/50 backdrop-blur-md border border-ash/20 mx-auto max-w-sm"
                 >
-                  <p className="text-sm text-steel">
-                    Recording will start automatically in {countdown} seconds
+                  <p className="text-sm text-ash/90 font-semibold">
+                    Recording starts in {countdown} seconds
                   </p>
-                  <p className="text-xs text-steel/70 mt-2">
+                  <p className="text-xs text-ash/60 mt-2">
                     Maximum {maxDuration} seconds • Audio enabled
                   </p>
                 </motion.div>
