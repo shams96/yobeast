@@ -199,33 +199,97 @@ export default function BeastSubmitPage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <div className="bg-gradient-to-br from-digital-grape/20 to-brand-mocha/20 border border-digital-grape/40 rounded-2xl p-6">
-          <div className="flex items-start gap-3">
-            <span className="text-3xl">🎬</span>
+        {/* Challenge Info Card - More Prominent */}
+        <div className="bg-gradient-to-br from-digital-grape/30 to-brand-mocha/30 border-2 border-digital-grape/60 rounded-2xl p-6 shadow-elevated">
+          <div className="flex items-start gap-4 mb-4">
+            <span className="text-5xl">🎬</span>
             <div className="flex-1">
-              <h2 className="text-lg font-bold text-ash mb-1">{currentWeek.title}</h2>
-              <p className="text-sm text-steel mb-3">{currentWeek.description}</p>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold text-signal-lime">PRIZE:</span>
-                <span className="text-sm font-bold text-ash">{currentWeek.prize.displayString}</span>
+              <h2 className="text-2xl font-black text-ash mb-2">{currentWeek.title}</h2>
+              <p className="text-base text-steel/90 mb-4">{currentWeek.description}</p>
+
+              {/* Prize - Very Prominent */}
+              <div className="bg-signal-lime/20 border border-signal-lime/40 rounded-xl px-4 py-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">💰</span>
+                  <div>
+                    <p className="text-xs font-bold text-signal-lime uppercase tracking-wide">Win This Week</p>
+                    <p className="text-lg font-black text-ash">{currentWeek.prize.displayString}</p>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-steel">Rules:</p>
-                {currentWeek.rules.map((rule, i) => (<p key={i} className="text-xs text-steel/70">• {rule}</p>))}
+
+              {/* Deadline */}
+              <div className="bg-electric-coral/20 border border-electric-coral/40 rounded-xl px-4 py-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">⏰</span>
+                  <div>
+                    <p className="text-xs font-bold text-electric-coral uppercase tracking-wide">Deadline</p>
+                    <p className="text-base font-bold text-ash">Wednesday 11:59 PM</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rules */}
+              <div className="space-y-2">
+                <p className="text-sm font-bold text-ash">Quick Rules:</p>
+                {currentWeek.rules.map((rule, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="text-signal-lime text-sm">✓</span>
+                    <p className="text-sm text-steel/80">{rule}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
         {!videoPreview ? (
-          <div className="space-y-3">
-            {/* PRIMARY CTA - Record Video */}
+          <div className="space-y-5">
+            {/* How It Works - Process Explanation */}
+            <div className="bg-carbon/50 border border-steel/20 rounded-2xl p-5">
+              <h3 className="text-lg font-bold text-ash mb-4 flex items-center gap-2">
+                <span className="text-2xl">📱</span>
+                How It Works
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-signal-lime/20 border border-signal-lime/40 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-black text-signal-lime">1</span>
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <p className="text-sm font-bold text-ash">Camera Opens Automatically</p>
+                    <p className="text-xs text-steel/70 mt-1">Your camera will start with a 5-second countdown</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-signal-lime/20 border border-signal-lime/40 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-black text-signal-lime">2</span>
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <p className="text-sm font-bold text-ash">Record Your Video</p>
+                    <p className="text-xs text-steel/70 mt-1">Up to {currentWeek.maxDuration} seconds • Recording stops automatically</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-signal-lime/20 border border-signal-lime/40 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-black text-signal-lime">3</span>
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <p className="text-sm font-bold text-ash">Done! Video Submitted</p>
+                    <p className="text-xs text-steel/70 mt-1">Your entry is automatically validated and submitted</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* PRIMARY CTA - Clearer Text */}
             <button
               onClick={() => setShowRecorder(true)}
-              className="w-full bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall font-bold text-lg px-8 py-6 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-3 shadow-elevated"
+              className="w-full bg-gradient-to-r from-electric-coral to-signal-lime text-nightfall font-black text-xl px-8 py-8 rounded-2xl hover:scale-105 active:scale-95 transition-transform flex flex-col items-center justify-center gap-2 shadow-elevated"
             >
-              <span className="text-3xl">🎥</span>
-              <span>Record Video Now</span>
+              <span className="text-5xl">📹</span>
+              <span>Start Camera & Record</span>
+              <span className="text-sm font-semibold opacity-90">Tap to begin • {currentWeek.maxDuration}s max</span>
             </button>
 
             {/* SECONDARY CTA - Upload */}
@@ -234,7 +298,7 @@ export default function BeastSubmitPage() {
                 <div className="w-full border-t border-steel/20"></div>
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-3 bg-nightfall text-steel font-semibold">OR</span>
+                <span className="px-3 bg-nightfall text-steel font-semibold">Already Have a Video?</span>
               </div>
             </div>
 
@@ -244,7 +308,7 @@ export default function BeastSubmitPage() {
               className="w-full bg-carbon border-2 border-steel/20 text-ash font-semibold text-base px-6 py-4 rounded-2xl hover:border-ash/40 transition-colors flex items-center justify-center gap-3"
             >
               <span className="text-2xl">📂</span>
-              <span>Upload Existing Video</span>
+              <span>Upload from Gallery</span>
             </button>
           </div>
         ) : (
