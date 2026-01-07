@@ -10,6 +10,7 @@ import {
   createRealMojiReaction,
 } from '@/lib/firestore';
 import type { RealMojiReaction } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 
 interface MomentCardProps {
   moment: Moment;
@@ -22,6 +23,7 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
   const [reactions, setReactions] = useState<RealMojiReaction[]>([]);
   const [hasReacted, setHasReacted] = useState(false);
 
+  const { user } = useAuth();
   const useFirebase = isFirebaseConfigured();
 
   // Load reactions on mount
@@ -35,27 +37,27 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
 
   // Subscribe to real-time reaction updates
   useEffect(() => {
-    if (!useFirebase) return;
+    if (!useFirebase || !user?.id) return;
 
     const unsubscribe = subscribeReactions(moment.id, (fetchedReactions) => {
       setReactions(fetchedReactions);
 
       // Check if current user has already reacted
-      const currentUserId = 'current_user'; // TODO: Replace with real auth
-      const userReacted = fetchedReactions.some(r => r.userId === currentUserId);
+      const userReacted = fetchedReactions.some(r => r.userId === user.id);
       setHasReacted(userReacted);
     });
 
     return () => unsubscribe();
-  }, [moment.id, useFirebase]);
+  }, [moment.id, useFirebase, user?.id]);
 
   const loadFirebaseReactions = async () => {
+    if (!user?.id) return;
+
     try {
       const fetchedReactions = await getMomentReactions(moment.id);
       setReactions(fetchedReactions);
 
-      const currentUserId = 'current_user';
-      const userReacted = fetchedReactions.some(r => r.userId === currentUserId);
+      const userReacted = fetchedReactions.some(r => r.userId === user.id);
       setHasReacted(userReacted);
     } catch (error) {
       console.error('Error loading Firebase reactions:', error);
@@ -64,6 +66,8 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
   };
 
   const loadLocalStorageReactions = () => {
+    if (!user?.id) return;
+
     const storedReactions = localStorage.getItem(`realmoji_${moment.id}`);
     if (storedReactions) {
       const parsed = JSON.parse(storedReactions);
@@ -73,23 +77,24 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
       })));
 
       // Check if current user has already reacted
-      const currentUserId = 'current_user';
-      const userReacted = parsed.some((r: any) => r.userId === currentUserId);
+      const userReacted = parsed.some((r: any) => r.userId === user.id);
       setHasReacted(userReacted);
     }
   };
 
   const handleReactionSubmit = async (emoji: string, selfieDataUrl: string) => {
-    const currentUserId = 'current_user'; // TODO: Replace with real auth
-    const currentUserName = 'You'; // TODO: Get from auth context
+    if (!user?.id || !user?.name) {
+      alert('Please sign in to react');
+      return;
+    }
 
     try {
       if (useFirebase) {
         // Create reaction in Firestore
         await createRealMojiReaction({
           momentId: moment.id,
-          userId: currentUserId,
-          userName: currentUserName,
+          userId: user.id,
+          userName: user.name,
           emoji,
           selfieDataUrl,
         });
@@ -103,8 +108,8 @@ export default function MomentCard({ moment, onReact }: MomentCardProps) {
           id: `reaction_${Date.now()}`,
           emoji,
           selfieDataUrl,
-          userId: currentUserId,
-          userName: currentUserName,
+          userId: user.id,
+          userName: user.name,
           createdAt: new Date(),
           momentId: moment.id,
         };

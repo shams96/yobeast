@@ -16,6 +16,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.36.2",
     "@clerk/themes": "^2.4.43",
+    "@sentry/nextjs": "^10.32.1",
     "@vercel/analytics": "^1.6.1",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",

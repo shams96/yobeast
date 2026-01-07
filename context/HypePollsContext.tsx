@@ -9,6 +9,7 @@ import {
   hasUserVotedOnPoll,
 } from '@/lib/firestore';
 import type { HypePoll, PollVote, ComplimentNotification } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 
 // Positive question library (Gas/TBH style)
 const POSITIVE_QUESTIONS = [
@@ -63,6 +64,7 @@ export function HypePollsProvider({ children }: { children: ReactNode }) {
   const [myNotifications, setMyNotifications] = useState<ComplimentNotification[]>([]);
   const [totalCompliments, setTotalCompliments] = useState(0);
 
+  const { user } = useAuth();
   const useFirebase = isFirebaseConfigured();
 
   // Initialize and subscribe to daily polls
@@ -165,11 +167,16 @@ export function HypePollsProvider({ children }: { children: ReactNode }) {
   };
 
   const voteForPerson = async (pollId: string, personId: string) => {
+    if (!user?.id) {
+      alert('Please sign in to vote');
+      return;
+    }
+
     try {
       if (useFirebase) {
         // Create vote in Firestore
         await createPollVote({
-          userId: 'current_user', // TODO: Replace with real auth user ID
+          userId: user.id,
           pollId,
           votedForUserId: personId,
           isAnonymous: true,
@@ -178,7 +185,7 @@ export function HypePollsProvider({ children }: { children: ReactNode }) {
         // Update local state
         const newVote: PollVote = {
           id: `vote_${Date.now()}`,
-          userId: 'current_user',
+          userId: user.id,
           pollId,
           votedForUserId: personId,
           votedAt: new Date(),
@@ -192,7 +199,7 @@ export function HypePollsProvider({ children }: { children: ReactNode }) {
         // Fallback to localStorage
         const newVote: PollVote = {
           id: `vote_${Date.now()}`,
-          userId: 'current_user',
+          userId: user.id,
           pollId,
           votedForUserId: personId,
           votedAt: new Date(),
@@ -214,7 +221,7 @@ export function HypePollsProvider({ children }: { children: ReactNode }) {
     // In production, this would increment a counter in the database
     // For demo, we'll create notifications for the current user
     const poll = dailyPolls.find(p => p.id === pollId);
-    if (!poll) return;
+    if (!poll || !user?.id) return;
 
     // Check if there's an existing notification for this poll
     const existingNotif = myNotifications.find(n => n.pollQuestion === poll.question);
@@ -233,7 +240,7 @@ export function HypePollsProvider({ children }: { children: ReactNode }) {
       // Create new notification
       const newNotif: ComplimentNotification = {
         id: `notif_${Date.now()}`,
-        recipientId: 'current_user', // TODO: Replace with real auth user ID
+        recipientId: user.id,
         message: `Someone voted for you! 🔥`,
         count: 1,
         pollQuestion: poll.question,
